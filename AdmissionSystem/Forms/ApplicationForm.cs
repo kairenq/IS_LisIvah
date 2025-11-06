@@ -253,7 +253,7 @@ namespace AdmissionSystem.Forms
 
             try
             {
-                Application application = new Application
+                Models.Application application = new Models.Application
                 {
                     UserId = currentUser.Id,
                     SpecialtyId = specialty.Id,
