@@ -16,7 +16,7 @@ namespace AdmissionSystem.Models
         public string Address { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
-        public int ExamScore { get; set; }
+        public double ExamScore { get; set; }
         public string Status { get; set; } // "На рассмотрении", "Одобрено", "Отклонено"
         public DateTime SubmissionDate { get; set; }
         public string Notes { get; set; }

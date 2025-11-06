@@ -25,7 +25,7 @@ namespace AdmissionSystem.Forms
 
         private void InitializeComponent()
         {
-            this.Size = new Size(500, 650);
+            this.Size = new Size(700, 800);
             this.Text = "Регистрация нового пользователя";
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -35,7 +35,7 @@ namespace AdmissionSystem.Forms
             // Главная панель
             panelMain = new Panel
             {
-                Size = new Size(400, 550),
+                Size = new Size(600, 700),
                 Location = new Point(50, 50),
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.None
@@ -50,10 +50,10 @@ namespace AdmissionSystem.Forms
             lblTitle = new Label
             {
                 Text = "РЕГИСТРАЦИЯ",
-                Font = new Font("Segoe UI", 20, FontStyle.Bold),
+                Font = new Font("Segoe UI", 24, FontStyle.Bold),
                 ForeColor = ColorTranslator.FromHtml("#4caf50"),
-                Size = new Size(360, 50),
-                Location = new Point(20, 30),
+                Size = new Size(560, 60),
+                Location = new Point(20, 40),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -61,17 +61,17 @@ namespace AdmissionSystem.Forms
             Label lblFullName = new Label
             {
                 Text = "ФИО:",
-                Font = new Font("Segoe UI", 10, FontStyle.Regular),
-                Size = new Size(360, 25),
-                Location = new Point(20, 100),
+                Font = new Font("Segoe UI", 12, FontStyle.Regular),
+                Size = new Size(560, 30),
+                Location = new Point(20, 130),
                 ForeColor = ColorTranslator.FromHtml("#333333")
             };
 
             txtFullName = new TextBox
             {
-                Font = new Font("Segoe UI", 11),
-                Size = new Size(360, 35),
-                Location = new Point(20, 130),
+                Font = new Font("Segoe UI", 13),
+                Size = new Size(560, 40),
+                Location = new Point(20, 165),
                 BorderStyle = BorderStyle.FixedSingle
             };
 
@@ -79,17 +79,17 @@ namespace AdmissionSystem.Forms
             Label lblLogin = new Label
             {
                 Text = "Логин:",
-                Font = new Font("Segoe UI", 10, FontStyle.Regular),
-                Size = new Size(360, 25),
-                Location = new Point(20, 180),
+                Font = new Font("Segoe UI", 12, FontStyle.Regular),
+                Size = new Size(560, 30),
+                Location = new Point(20, 225),
                 ForeColor = ColorTranslator.FromHtml("#333333")
             };
 
             txtLogin = new TextBox
             {
-                Font = new Font("Segoe UI", 11),
-                Size = new Size(360, 35),
-                Location = new Point(20, 210),
+                Font = new Font("Segoe UI", 13),
+                Size = new Size(560, 40),
+                Location = new Point(20, 260),
                 BorderStyle = BorderStyle.FixedSingle
             };
 
@@ -97,17 +97,17 @@ namespace AdmissionSystem.Forms
             Label lblPassword = new Label
             {
                 Text = "Пароль:",
-                Font = new Font("Segoe UI", 10, FontStyle.Regular),
-                Size = new Size(360, 25),
-                Location = new Point(20, 260),
+                Font = new Font("Segoe UI", 12, FontStyle.Regular),
+                Size = new Size(560, 30),
+                Location = new Point(20, 320),
                 ForeColor = ColorTranslator.FromHtml("#333333")
             };
 
             txtPassword = new TextBox
             {
-                Font = new Font("Segoe UI", 11),
-                Size = new Size(360, 35),
-                Location = new Point(20, 290),
+                Font = new Font("Segoe UI", 13),
+                Size = new Size(560, 40),
+                Location = new Point(20, 355),
                 UseSystemPasswordChar = true,
                 BorderStyle = BorderStyle.FixedSingle
             };
@@ -116,17 +116,17 @@ namespace AdmissionSystem.Forms
             Label lblConfirmPassword = new Label
             {
                 Text = "Подтверждение пароля:",
-                Font = new Font("Segoe UI", 10, FontStyle.Regular),
-                Size = new Size(360, 25),
-                Location = new Point(20, 340),
+                Font = new Font("Segoe UI", 12, FontStyle.Regular),
+                Size = new Size(560, 30),
+                Location = new Point(20, 415),
                 ForeColor = ColorTranslator.FromHtml("#333333")
             };
 
             txtConfirmPassword = new TextBox
             {
-                Font = new Font("Segoe UI", 11),
-                Size = new Size(360, 35),
-                Location = new Point(20, 370),
+                Font = new Font("Segoe UI", 13),
+                Size = new Size(560, 40),
+                Location = new Point(20, 450),
                 UseSystemPasswordChar = true,
                 BorderStyle = BorderStyle.FixedSingle
             };
@@ -135,9 +135,9 @@ namespace AdmissionSystem.Forms
             chkShowPassword = new CheckBox
             {
                 Text = "Показать пароль",
-                Font = new Font("Segoe UI", 9),
-                Size = new Size(200, 25),
-                Location = new Point(20, 415),
+                Font = new Font("Segoe UI", 10),
+                Size = new Size(200, 30),
+                Location = new Point(20, 505),
                 ForeColor = ColorTranslator.FromHtml("#666666")
             };
             chkShowPassword.CheckedChanged += (s, e) =>
@@ -150,9 +150,9 @@ namespace AdmissionSystem.Forms
             btnRegister = new Button
             {
                 Text = "ЗАРЕГИСТРИРОВАТЬСЯ",
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                Size = new Size(360, 45),
-                Location = new Point(20, 455),
+                Font = new Font("Segoe UI", 13, FontStyle.Bold),
+                Size = new Size(560, 50),
+                Location = new Point(20, 555),
                 BackColor = ColorTranslator.FromHtml("#4caf50"),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
@@ -167,9 +167,9 @@ namespace AdmissionSystem.Forms
             btnCancel = new Button
             {
                 Text = "ОТМЕНА",
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                Size = new Size(360, 45),
-                Location = new Point(20, 510),
+                Font = new Font("Segoe UI", 13, FontStyle.Bold),
+                Size = new Size(560, 50),
+                Location = new Point(20, 620),
                 BackColor = ColorTranslator.FromHtml("#757575"),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,

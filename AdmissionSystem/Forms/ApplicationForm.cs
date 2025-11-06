@@ -123,16 +123,18 @@ namespace AdmissionSystem.Forms
             txtEmail = CreateTextBox(yPosition + 25);
             yPosition += 70;
 
-            // Баллы ЕГЭ
-            Label lblExamScore = CreateLabel($"Баллы ЕГЭ (минимум {specialty.MinScore}):", yPosition);
+            // Средний балл аттестата
+            Label lblExamScore = CreateLabel($"Средний балл аттестата (минимум {specialty.MinScore}):", yPosition);
             numExamScore = new NumericUpDown
             {
                 Font = new Font("Segoe UI", 10),
                 Location = new Point(25, yPosition + 25),
                 Size = new Size(550, 30),
-                Minimum = 0,
-                Maximum = 300,
-                Value = specialty.MinScore
+                Minimum = 2.0M,
+                Maximum = 5.0M,
+                DecimalPlaces = 2,
+                Increment = 0.01M,
+                Value = (decimal)specialty.MinScore
             };
             yPosition += 70;
 
@@ -244,9 +246,9 @@ namespace AdmissionSystem.Forms
                 return;
             }
 
-            if (numExamScore.Value < specialty.MinScore)
+            if ((double)numExamScore.Value < specialty.MinScore)
             {
-                MessageBox.Show($"Баллы ЕГЭ должны быть не менее {specialty.MinScore}!", "Ошибка",
+                MessageBox.Show($"Средний балл аттестата должен быть не менее {specialty.MinScore}!", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -266,7 +268,7 @@ namespace AdmissionSystem.Forms
                     Address = txtAddress.Text.Trim(),
                     Phone = txtPhone.Text.Trim(),
                     Email = txtEmail.Text.Trim(),
-                    ExamScore = (int)numExamScore.Value
+                    ExamScore = (double)numExamScore.Value
                 };
 
                 DatabaseHelper.AddApplication(application);

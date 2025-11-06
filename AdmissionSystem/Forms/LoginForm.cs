@@ -29,7 +29,7 @@ namespace AdmissionSystem.Forms
 
         private void InitializeComponent()
         {
-            this.Size = new Size(500, 600);
+            this.Size = new Size(700, 700);
             this.Text = "Приемная комиссия - Вход";
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -39,7 +39,7 @@ namespace AdmissionSystem.Forms
             // Главная панель
             panelMain = new Panel
             {
-                Size = new Size(400, 500),
+                Size = new Size(600, 600),
                 Location = new Point(50, 50),
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.None
@@ -54,10 +54,10 @@ namespace AdmissionSystem.Forms
             lblTitle = new Label
             {
                 Text = "ПРИЕМНАЯ КОМИССИЯ",
-                Font = new Font("Segoe UI", 20, FontStyle.Bold),
+                Font = new Font("Segoe UI", 24, FontStyle.Bold),
                 ForeColor = ColorTranslator.FromHtml("#1976d2"),
-                Size = new Size(360, 50),
-                Location = new Point(20, 30),
+                Size = new Size(560, 60),
+                Location = new Point(20, 40),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -65,10 +65,10 @@ namespace AdmissionSystem.Forms
             Label lblSubtitle = new Label
             {
                 Text = "Вход в систему",
-                Font = new Font("Segoe UI", 12, FontStyle.Regular),
+                Font = new Font("Segoe UI", 14, FontStyle.Regular),
                 ForeColor = ColorTranslator.FromHtml("#666666"),
-                Size = new Size(360, 30),
-                Location = new Point(20, 85),
+                Size = new Size(560, 35),
+                Location = new Point(20, 110),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -76,17 +76,17 @@ namespace AdmissionSystem.Forms
             lblLogin = new Label
             {
                 Text = "Логин:",
-                Font = new Font("Segoe UI", 10, FontStyle.Regular),
-                Size = new Size(360, 25),
-                Location = new Point(20, 140),
+                Font = new Font("Segoe UI", 12, FontStyle.Regular),
+                Size = new Size(560, 30),
+                Location = new Point(20, 180),
                 ForeColor = ColorTranslator.FromHtml("#333333")
             };
 
             txtLogin = new TextBox
             {
-                Font = new Font("Segoe UI", 11),
-                Size = new Size(360, 35),
-                Location = new Point(20, 170),
+                Font = new Font("Segoe UI", 13),
+                Size = new Size(560, 40),
+                Location = new Point(20, 215),
                 BorderStyle = BorderStyle.FixedSingle
             };
 
@@ -94,17 +94,17 @@ namespace AdmissionSystem.Forms
             lblPassword = new Label
             {
                 Text = "Пароль:",
-                Font = new Font("Segoe UI", 10, FontStyle.Regular),
-                Size = new Size(360, 25),
-                Location = new Point(20, 220),
+                Font = new Font("Segoe UI", 12, FontStyle.Regular),
+                Size = new Size(560, 30),
+                Location = new Point(20, 275),
                 ForeColor = ColorTranslator.FromHtml("#333333")
             };
 
             txtPassword = new TextBox
             {
-                Font = new Font("Segoe UI", 11),
-                Size = new Size(360, 35),
-                Location = new Point(20, 250),
+                Font = new Font("Segoe UI", 13),
+                Size = new Size(560, 40),
+                Location = new Point(20, 310),
                 UseSystemPasswordChar = true,
                 BorderStyle = BorderStyle.FixedSingle
             };
@@ -113,9 +113,9 @@ namespace AdmissionSystem.Forms
             chkShowPassword = new CheckBox
             {
                 Text = "Показать пароль",
-                Font = new Font("Segoe UI", 9),
-                Size = new Size(200, 25),
-                Location = new Point(20, 295),
+                Font = new Font("Segoe UI", 10),
+                Size = new Size(200, 30),
+                Location = new Point(20, 365),
                 ForeColor = ColorTranslator.FromHtml("#666666")
             };
             chkShowPassword.CheckedChanged += (s, e) =>
@@ -127,9 +127,9 @@ namespace AdmissionSystem.Forms
             btnLogin = new Button
             {
                 Text = "ВОЙТИ",
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                Size = new Size(360, 45),
-                Location = new Point(20, 340),
+                Font = new Font("Segoe UI", 13, FontStyle.Bold),
+                Size = new Size(560, 50),
+                Location = new Point(20, 415),
                 BackColor = ColorTranslator.FromHtml("#1976d2"),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
@@ -144,9 +144,9 @@ namespace AdmissionSystem.Forms
             btnRegister = new Button
             {
                 Text = "РЕГИСТРАЦИЯ",
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                Size = new Size(360, 45),
-                Location = new Point(20, 395),
+                Font = new Font("Segoe UI", 13, FontStyle.Bold),
+                Size = new Size(560, 50),
+                Location = new Point(20, 480),
                 BackColor = ColorTranslator.FromHtml("#4caf50"),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
@@ -161,9 +161,9 @@ namespace AdmissionSystem.Forms
             linkInstruction = new LinkLabel
             {
                 Text = "📖 Инструкция пользователя",
-                Font = new Font("Segoe UI", 10, FontStyle.Regular),
-                Size = new Size(360, 25),
-                Location = new Point(20, 455),
+                Font = new Font("Segoe UI", 11, FontStyle.Regular),
+                Size = new Size(560, 30),
+                Location = new Point(20, 545),
                 TextAlign = ContentAlignment.MiddleCenter,
                 LinkColor = ColorTranslator.FromHtml("#1976d2"),
                 Cursor = Cursors.Hand
@@ -240,8 +240,11 @@ namespace AdmissionSystem.Forms
 
         private void LinkInstruction_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            string instructionPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
-                "Resources", "Инструкция_пользователя.docx");
+            // Сначала ищем в корне проекта
+            string rootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Инструкция_пользователя.docx");
+            string resourcesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Инструкция_пользователя.docx");
+
+            string instructionPath = File.Exists(rootPath) ? rootPath : resourcesPath;
 
             if (File.Exists(instructionPath))
             {
@@ -249,7 +252,7 @@ namespace AdmissionSystem.Forms
                 {
                     Process.Start(new ProcessStartInfo
                     {
-                        FileName = instructionPath,
+                        FileName = Path.GetFullPath(instructionPath),
                         UseShellExecute = true
                     });
                 }

@@ -6,7 +6,7 @@ namespace AdmissionSystem.Models
         public string Name { get; set; }
         public string Code { get; set; }
         public int PlacesCount { get; set; }
-        public int MinScore { get; set; }
+        public double MinScore { get; set; }
         public string Description { get; set; }
     }
 }

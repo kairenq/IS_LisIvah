@@ -39,7 +39,7 @@ namespace AdmissionSystem.Database
                         Name TEXT NOT NULL,
                         Code TEXT NOT NULL UNIQUE,
                         PlacesCount INTEGER NOT NULL,
-                        MinScore INTEGER NOT NULL,
+                        MinScore REAL NOT NULL,
                         Description TEXT
                     )");
 
@@ -58,7 +58,7 @@ namespace AdmissionSystem.Database
                         Address TEXT NOT NULL,
                         Phone TEXT NOT NULL,
                         Email TEXT NOT NULL,
-                        ExamScore INTEGER NOT NULL,
+                        ExamScore REAL NOT NULL,
                         Status TEXT NOT NULL,
                         SubmissionDate TEXT NOT NULL,
                         Notes TEXT,
@@ -80,14 +80,14 @@ namespace AdmissionSystem.Database
                             new { date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") });
                     }
 
-                    // Добавление тестовых специальностей
+                    // Добавление специальностей колледжа
                     connection.Execute(@"
                         INSERT INTO Specialties (Name, Code, PlacesCount, MinScore, Description)
                         VALUES
-                        ('Программная инженерия', '09.03.04', 25, 180, 'Разработка программного обеспечения'),
-                        ('Информационная безопасность', '10.03.01', 20, 190, 'Защита информации и кибербезопасность'),
-                        ('Прикладная математика', '01.03.04', 15, 200, 'Математическое моделирование'),
-                        ('Компьютерные науки', '02.03.02', 30, 175, 'Алгоритмы и структуры данных')");
+                        ('Информационные системы', '09.02.07', 25, 4.35, 'Разработка и администрирование информационных систем'),
+                        ('Обеспечение безопасности', '10.02.05', 20, 4.42, 'Информационная безопасность автоматизированных систем'),
+                        ('Дошкольное образование', '44.02.01', 30, 4.28, 'Воспитание и обучение детей дошкольного возраста'),
+                        ('Начальные классы', '44.02.02', 30, 4.56, 'Преподавание в начальных классах')");
                 }
             }
         }

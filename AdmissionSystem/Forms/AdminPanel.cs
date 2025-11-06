@@ -25,7 +25,7 @@ namespace AdmissionSystem.Forms
 
         private void InitializeComponent()
         {
-            this.Size = new Size(1200, 700);
+            this.Size = new Size(1400, 850);
             this.Text = "Панель администратора";
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = ColorTranslator.FromHtml("#f0f2f5");
@@ -61,7 +61,7 @@ namespace AdmissionSystem.Forms
                 Text = "ВЫХОД",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 Size = new Size(120, 40),
-                Location = new Point(1050, 20),
+                Location = new Point(1250, 20),
                 BackColor = ColorTranslator.FromHtml("#f44336"),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
