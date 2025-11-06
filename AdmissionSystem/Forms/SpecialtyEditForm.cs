@@ -117,9 +117,11 @@ namespace AdmissionSystem.Forms
                 Font = new Font("Segoe UI", 10),
                 Location = new Point(25, 315),
                 Size = new Size(450, 30),
-                Minimum = 0,
-                Maximum = 300,
-                Value = 150
+                Minimum = 2.0M,
+                Maximum = 5.0M,
+                DecimalPlaces = 2,
+                Increment = 0.01M,
+                Value = 4.0M
             };
 
             // Описание
@@ -190,7 +192,7 @@ namespace AdmissionSystem.Forms
             txtName.Text = specialty.Name;
             txtCode.Text = specialty.Code;
             numPlaces.Value = specialty.PlacesCount;
-            numMinScore.Value = specialty.MinScore;
+            numMinScore.Value = (decimal)specialty.MinScore;
             txtDescription.Text = specialty.Description;
         }
 
@@ -217,7 +219,7 @@ namespace AdmissionSystem.Forms
                     specialty.Name = txtName.Text.Trim();
                     specialty.Code = txtCode.Text.Trim();
                     specialty.PlacesCount = (int)numPlaces.Value;
-                    specialty.MinScore = (int)numMinScore.Value;
+                    specialty.MinScore = (double)numMinScore.Value;
                     specialty.Description = txtDescription.Text.Trim();
 
                     DatabaseHelper.UpdateSpecialty(specialty);
@@ -231,7 +233,7 @@ namespace AdmissionSystem.Forms
                         Name = txtName.Text.Trim(),
                         Code = txtCode.Text.Trim(),
                         PlacesCount = (int)numPlaces.Value,
-                        MinScore = (int)numMinScore.Value,
+                        MinScore = (double)numMinScore.Value,
                         Description = txtDescription.Text.Trim()
                     };
 
