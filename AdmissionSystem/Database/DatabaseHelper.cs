@@ -255,5 +255,28 @@ namespace AdmissionSystem.Database
                     "SELECT * FROM Specialties WHERE Id = @Id", new { Id = id });
             }
         }
+
+        public static bool UserExists(string login)
+        {
+            using (var connection = new SQLiteConnection(ConnectionString))
+            {
+                var count = connection.ExecuteScalar<int>(
+                    "SELECT COUNT(*) FROM Users WHERE Login = @Login",
+                    new { Login = login });
+                return count > 0;
+            }
+        }
+
+        public static void UpdateApplicationStatus(int applicationId, string status)
+        {
+            using (var connection = new SQLiteConnection(ConnectionString))
+            {
+                connection.Execute(@"
+                    UPDATE Applications
+                    SET Status = @Status
+                    WHERE Id = @Id",
+                    new { Id = applicationId, Status = status });
+            }
+        }
     }
 }
