@@ -277,8 +277,23 @@ namespace AdmissionSystem.Forms
 
         private void LoadData()
         {
-            LoadSpecialties();
-            LoadApplications();
+            try
+            {
+                if (dgvSpecialties != null)
+                    LoadSpecialties();
+                else
+                    MessageBox.Show("ERROR: dgvSpecialties is null!", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                if (dgvApplications != null)
+                    LoadApplications();
+                else
+                    MessageBox.Show("ERROR: dgvApplications is null!", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при загрузке данных:\n\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void LoadSpecialties()

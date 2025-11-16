@@ -401,9 +401,28 @@ namespace AdmissionSystem.Forms
 
         private void LoadData()
         {
-            LoadApplications();
-            LoadSpecialties();
-            LoadUsers();
+            try
+            {
+                if (dgvApplications != null)
+                    LoadApplications();
+                else
+                    MessageBox.Show("ERROR: dgvApplications is null!", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                if (dgvSpecialties != null)
+                    LoadSpecialties();
+                else
+                    MessageBox.Show("ERROR: dgvSpecialties is null!", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                if (dgvUsers != null)
+                    LoadUsers();
+                else
+                    MessageBox.Show("ERROR: dgvUsers is null!", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при загрузке данных:\n\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void LoadApplications()
