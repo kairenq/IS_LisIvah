@@ -1,8 +1,10 @@
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using AdmissionSystem.Database;
 using AdmissionSystem.Models;
+using AdmissionSystem.UI;
 
 namespace AdmissionSystem.Forms
 {
@@ -33,158 +35,152 @@ namespace AdmissionSystem.Forms
 
         private void InitializeComponent()
         {
-            this.Size = new Size(500, 550);
+            this.Size = new Size(650, 700);
             this.Text = isEditMode ? "Редактирование специальности" : "Добавление специальности";
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
-            this.BackColor = Color.White;
+            this.BackColor = ModernUIHelper.DarkBackground;
+            this.DoubleBuffered = true;
+
+            // Фоновый градиент
+            this.Paint += (s, e) =>
+            {
+                using (var brush = new LinearGradientBrush(
+                    this.ClientRectangle,
+                    ModernUIHelper.DarkBackground,
+                    ColorTranslator.FromHtml("#16192e"),
+                    90F))
+                {
+                    e.Graphics.FillRectangle(brush, this.ClientRectangle);
+                }
+            };
+
+            // Главная карточка
+            Panel cardPanel = ModernUIHelper.CreateCard(new Point(75, 50), new Size(500, 600));
 
             Label lblTitle = new Label
             {
-                Text = isEditMode ? "РЕДАКТИРОВАНИЕ СПЕЦИАЛЬНОСТИ" : "НОВАЯ СПЕЦИАЛЬНОСТЬ",
+                Text = isEditMode ? "РЕДАКТИРОВАТЬ СПЕЦИАЛЬНОСТЬ" : "НОВАЯ СПЕЦИАЛЬНОСТЬ",
                 Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = ColorTranslator.FromHtml("#1976d2"),
-                Size = new Size(450, 40),
-                Location = new Point(25, 20),
-                TextAlign = ContentAlignment.MiddleCenter
+                ForeColor = ModernUIHelper.TextPrimary,
+                Size = new Size(460, 40),
+                Location = new Point(20, 20),
+                TextAlign = ContentAlignment.MiddleCenter,
+                BackColor = Color.Transparent
             };
 
             // Название
-            Label lblName = new Label
-            {
-                Text = "Название специальности:",
-                Font = new Font("Segoe UI", 10),
-                Location = new Point(25, 80),
-                Size = new Size(450, 20)
-            };
+            Label lblName = ModernUIHelper.CreateModernLabel(
+                "НАЗВАНИЕ СПЕЦИАЛЬНОСТИ", new Point(40, 80), 9, FontStyle.Bold, ModernUIHelper.TextMuted);
 
+            Panel panelNameBox = new Panel
+            {
+                Location = new Point(40, 105),
+                Size = new Size(420, 40),
+                BackColor = ModernUIHelper.SidebarBackground
+            };
             txtName = new TextBox
             {
+                Location = new Point(10, 9),
+                Size = new Size(400, 30),
                 Font = new Font("Segoe UI", 10),
-                Location = new Point(25, 105),
-                Size = new Size(450, 30),
-                BorderStyle = BorderStyle.FixedSingle
+                BackColor = ModernUIHelper.SidebarBackground,
+                ForeColor = ModernUIHelper.TextPrimary,
+                BorderStyle = BorderStyle.None
             };
+            panelNameBox.Controls.Add(txtName);
 
             // Код
-            Label lblCode = new Label
-            {
-                Text = "Код специальности:",
-                Font = new Font("Segoe UI", 10),
-                Location = new Point(25, 150),
-                Size = new Size(450, 20)
-            };
+            Label lblCode = ModernUIHelper.CreateModernLabel(
+                "КОД СПЕЦИАЛЬНОСТИ", new Point(40, 165), 9, FontStyle.Bold, ModernUIHelper.TextMuted);
 
+            Panel panelCodeBox = new Panel
+            {
+                Location = new Point(40, 190),
+                Size = new Size(420, 40),
+                BackColor = ModernUIHelper.SidebarBackground
+            };
             txtCode = new TextBox
             {
+                Location = new Point(10, 9),
+                Size = new Size(400, 30),
                 Font = new Font("Segoe UI", 10),
-                Location = new Point(25, 175),
-                Size = new Size(450, 30),
-                BorderStyle = BorderStyle.FixedSingle
+                BackColor = ModernUIHelper.SidebarBackground,
+                ForeColor = ModernUIHelper.TextPrimary,
+                BorderStyle = BorderStyle.None
             };
+            panelCodeBox.Controls.Add(txtCode);
 
-            // Количество мест
-            Label lblPlaces = new Label
-            {
-                Text = "Количество мест:",
-                Font = new Font("Segoe UI", 10),
-                Location = new Point(25, 220),
-                Size = new Size(450, 20)
-            };
+            // Количество мест и минимальный балл в одной строке
+            Label lblPlaces = ModernUIHelper.CreateModernLabel(
+                "КОЛИЧЕСТВО МЕСТ", new Point(40, 250), 9, FontStyle.Bold, ModernUIHelper.TextMuted);
 
-            numPlaces = new NumericUpDown
-            {
-                Font = new Font("Segoe UI", 10),
-                Location = new Point(25, 245),
-                Size = new Size(450, 30),
-                Minimum = 1,
-                Maximum = 500,
-                Value = 25
-            };
+            numPlaces = ModernUIHelper.CreateModernNumericUpDown(
+                new Point(40, 275), new Size(190, 40), 1, 500, 25);
 
-            // Минимальный балл
-            Label lblMinScore = new Label
-            {
-                Text = "Минимальный балл:",
-                Font = new Font("Segoe UI", 10),
-                Location = new Point(25, 290),
-                Size = new Size(450, 20)
-            };
+            Label lblMinScore = ModernUIHelper.CreateModernLabel(
+                "МИНИМАЛЬНЫЙ БАЛЛ", new Point(270, 250), 9, FontStyle.Bold, ModernUIHelper.TextMuted);
 
-            numMinScore = new NumericUpDown
-            {
-                Font = new Font("Segoe UI", 10),
-                Location = new Point(25, 315),
-                Size = new Size(450, 30),
-                Minimum = 2.0M,
-                Maximum = 5.0M,
-                DecimalPlaces = 2,
-                Increment = 0.01M,
-                Value = 4.0M
-            };
+            numMinScore = ModernUIHelper.CreateModernNumericUpDown(
+                new Point(270, 275), new Size(190, 40), 2.0M, 5.0M, 4.0M, 2);
 
             // Описание
-            Label lblDescription = new Label
-            {
-                Text = "Описание:",
-                Font = new Font("Segoe UI", 10),
-                Location = new Point(25, 360),
-                Size = new Size(450, 20)
-            };
+            Label lblDescription = ModernUIHelper.CreateModernLabel(
+                "ОПИСАНИЕ", new Point(40, 335), 9, FontStyle.Bold, ModernUIHelper.TextMuted);
 
+            Panel panelDescBox = new Panel
+            {
+                Location = new Point(40, 360),
+                Size = new Size(420, 100),
+                BackColor = ModernUIHelper.SidebarBackground
+            };
             txtDescription = new TextBox
             {
+                Location = new Point(10, 10),
+                Size = new Size(400, 80),
                 Font = new Font("Segoe UI", 10),
-                Location = new Point(25, 385),
-                Size = new Size(450, 60),
-                Multiline = true,
-                BorderStyle = BorderStyle.FixedSingle
+                BackColor = ModernUIHelper.SidebarBackground,
+                ForeColor = ModernUIHelper.TextPrimary,
+                BorderStyle = BorderStyle.None,
+                Multiline = true
             };
+            panelDescBox.Controls.Add(txtDescription);
 
-            // Кнопка сохранения
-            btnSave = new Button
-            {
-                Text = "СОХРАНИТЬ",
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Size = new Size(220, 40),
-                Location = new Point(25, 465),
-                BackColor = ColorTranslator.FromHtml("#4caf50"),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
-            };
-            btnSave.FlatAppearance.BorderSize = 0;
+            // Кнопки
+            btnSave = ModernUIHelper.CreateGradientButton(
+                "СОХРАНИТЬ",
+                new Point(40, 490),
+                new Size(190, 45),
+                ModernUIHelper.SuccessColor,
+                ColorTranslator.FromHtml("#00a67d")
+            );
             btnSave.Click += BtnSave_Click;
 
-            // Кнопка отмены
-            btnCancel = new Button
-            {
-                Text = "ОТМЕНА",
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Size = new Size(220, 40),
-                Location = new Point(255, 465),
-                BackColor = ColorTranslator.FromHtml("#757575"),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
-            };
-            btnCancel.FlatAppearance.BorderSize = 0;
+            btnCancel = ModernUIHelper.CreateGradientButton(
+                "ОТМЕНА",
+                new Point(270, 490),
+                new Size(190, 45),
+                ModernUIHelper.DangerColor,
+                ColorTranslator.FromHtml("#e66565")
+            );
             btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
 
-            this.Controls.Add(lblTitle);
-            this.Controls.Add(lblName);
-            this.Controls.Add(txtName);
-            this.Controls.Add(lblCode);
-            this.Controls.Add(txtCode);
-            this.Controls.Add(lblPlaces);
-            this.Controls.Add(numPlaces);
-            this.Controls.Add(lblMinScore);
-            this.Controls.Add(numMinScore);
-            this.Controls.Add(lblDescription);
-            this.Controls.Add(txtDescription);
-            this.Controls.Add(btnSave);
-            this.Controls.Add(btnCancel);
+            cardPanel.Controls.Add(lblTitle);
+            cardPanel.Controls.Add(lblName);
+            cardPanel.Controls.Add(panelNameBox);
+            cardPanel.Controls.Add(lblCode);
+            cardPanel.Controls.Add(panelCodeBox);
+            cardPanel.Controls.Add(lblPlaces);
+            cardPanel.Controls.Add(numPlaces);
+            cardPanel.Controls.Add(lblMinScore);
+            cardPanel.Controls.Add(numMinScore);
+            cardPanel.Controls.Add(lblDescription);
+            cardPanel.Controls.Add(panelDescBox);
+            cardPanel.Controls.Add(btnSave);
+            cardPanel.Controls.Add(btnCancel);
+
+            this.Controls.Add(cardPanel);
         }
 
         private void LoadSpecialtyData()

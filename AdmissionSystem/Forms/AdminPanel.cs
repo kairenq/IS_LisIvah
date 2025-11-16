@@ -1,248 +1,402 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 using AdmissionSystem.Database;
 using AdmissionSystem.Models;
+using AdmissionSystem.UI;
 
 namespace AdmissionSystem.Forms
 {
     public partial class AdminPanel : Form
     {
         private User currentUser;
-        private TabControl tabControl;
+        private Panel sidebarPanel;
+        private Panel contentPanel;
+        private Panel applicationsPanel;
+        private Panel specialtiesPanel;
+        private Panel usersPanel;
         private DataGridView dgvUsers;
         private DataGridView dgvSpecialties;
         private DataGridView dgvApplications;
-        private Label lblWelcome;
+        private Button btnApplicationsNav;
+        private Button btnSpecialtiesNav;
+        private Button btnUsersNav;
+        private Label lblPageTitle;
 
         public AdminPanel(User user)
         {
             currentUser = user;
             InitializeComponent();
             LoadData();
+            ShowApplicationsPanel();
         }
 
         private void InitializeComponent()
         {
-            this.Size = new Size(1400, 850);
+            this.Size = new Size(1500, 900);
             this.Text = "Панель администратора";
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.BackColor = ColorTranslator.FromHtml("#f0f2f5");
+            this.BackColor = ModernUIHelper.DarkBackground;
+            this.DoubleBuffered = true;
 
-            // Заголовок
-            Panel headerPanel = new Panel
+            // Боковая панель навигации
+            sidebarPanel = ModernUIHelper.CreateSidebar(new Size(280, 900));
+
+            // Логотип и приветствие
+            Label lblLogo = new Label
             {
-                Dock = DockStyle.Top,
-                Height = 80,
-                BackColor = ColorTranslator.FromHtml("#1976d2")
+                Text = "⚙️",
+                Font = new Font("Segoe UI", 48),
+                ForeColor = ModernUIHelper.PrimaryAccent,
+                Size = new Size(280, 80),
+                Location = new Point(0, 30),
+                TextAlign = ContentAlignment.MiddleCenter,
+                BackColor = Color.Transparent
             };
 
-            lblWelcome = new Label
+            Label lblWelcome = new Label
             {
-                Text = $"Добро пожаловать, {currentUser.FullName}",
+                Text = "ПАНЕЛЬ\nАДМИНИСТРАТОРА",
                 Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = Color.White,
-                Location = new Point(20, 15),
-                AutoSize = true
+                ForeColor = ModernUIHelper.TextPrimary,
+                Size = new Size(280, 70),
+                Location = new Point(0, 120),
+                TextAlign = ContentAlignment.MiddleCenter,
+                BackColor = Color.Transparent
             };
 
-            Label lblRole = new Label
+            Label lblUserName = new Label
             {
-                Text = "Администратор",
-                Font = new Font("Segoe UI", 12, FontStyle.Regular),
-                ForeColor = Color.White,
-                Location = new Point(20, 45),
-                AutoSize = true
+                Text = currentUser.FullName,
+                Font = new Font("Segoe UI", 11),
+                ForeColor = ModernUIHelper.TextSecondary,
+                Size = new Size(260, 40),
+                Location = new Point(10, 190),
+                TextAlign = ContentAlignment.MiddleCenter,
+                BackColor = Color.Transparent
             };
 
+            Panel divider = ModernUIHelper.CreateDivider(new Point(20, 240), 240);
+
+            // Кнопки навигации
+            btnApplicationsNav = ModernUIHelper.CreateSidebarButton("📋  Заявления", 270, true);
+            btnApplicationsNav.Click += (s, e) => ShowApplicationsPanel();
+
+            btnSpecialtiesNav = ModernUIHelper.CreateSidebarButton("🎓  Специальности", 340);
+            btnSpecialtiesNav.Click += (s, e) => ShowSpecialtiesPanel();
+
+            btnUsersNav = ModernUIHelper.CreateSidebarButton("👥  Пользователи", 410);
+            btnUsersNav.Click += (s, e) => ShowUsersPanel();
+
+            // Кнопка выхода
             Button btnLogout = new Button
             {
-                Text = "ВЫХОД",
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Size = new Size(120, 40),
-                Location = new Point(1250, 20),
-                BackColor = ColorTranslator.FromHtml("#f44336"),
-                ForeColor = Color.White,
+                Text = "🚪  Выход",
+                Location = new Point(0, 800),
+                Size = new Size(280, 55),
                 FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 12),
+                ForeColor = ModernUIHelper.DangerColor,
+                BackColor = Color.Transparent,
+                TextAlign = ContentAlignment.MiddleLeft,
                 Cursor = Cursors.Hand
             };
             btnLogout.FlatAppearance.BorderSize = 0;
-            btnLogout.Click += (s, e) => { this.Close(); };
-
-            headerPanel.Controls.Add(lblWelcome);
-            headerPanel.Controls.Add(lblRole);
-            headerPanel.Controls.Add(btnLogout);
-
-            // TabControl
-            tabControl = new TabControl
+            btnLogout.FlatAppearance.MouseOverBackColor = ColorTranslator.FromHtml("#2d3561");
+            btnLogout.Click += (s, e) =>
             {
-                Dock = DockStyle.Fill,
-                Font = new Font("Segoe UI", 10)
+                this.Close();
             };
 
-            // Вкладка "Заявления"
-            TabPage tabApplications = new TabPage("📋 Заявления");
-            InitializeApplicationsTab(tabApplications);
+            sidebarPanel.Controls.Add(lblLogo);
+            sidebarPanel.Controls.Add(lblWelcome);
+            sidebarPanel.Controls.Add(lblUserName);
+            sidebarPanel.Controls.Add(divider);
+            sidebarPanel.Controls.Add(btnApplicationsNav);
+            sidebarPanel.Controls.Add(btnSpecialtiesNav);
+            sidebarPanel.Controls.Add(btnUsersNav);
+            sidebarPanel.Controls.Add(btnLogout);
 
-            // Вкладка "Специальности"
-            TabPage tabSpecialties = new TabPage("🎓 Специальности");
-            InitializeSpecialtiesTab(tabSpecialties);
+            // Панель контента
+            contentPanel = new Panel
+            {
+                Location = new Point(280, 0),
+                Size = new Size(1220, 900),
+                BackColor = ModernUIHelper.CardBackground
+            };
 
-            // Вкладка "Пользователи"
-            TabPage tabUsers = new TabPage("👥 Пользователи");
-            InitializeUsersTab(tabUsers);
+            // Заголовок страницы
+            lblPageTitle = new Label
+            {
+                Text = "УПРАВЛЕНИЕ ЗАЯВЛЕНИЯМИ",
+                Font = new Font("Segoe UI", 20, FontStyle.Bold),
+                ForeColor = ModernUIHelper.TextPrimary,
+                Size = new Size(1200, 60),
+                Location = new Point(40, 30),
+                BackColor = Color.Transparent
+            };
+            contentPanel.Controls.Add(lblPageTitle);
 
-            tabControl.TabPages.Add(tabApplications);
-            tabControl.TabPages.Add(tabSpecialties);
-            tabControl.TabPages.Add(tabUsers);
+            // Создаем панели для разных разделов
+            CreateApplicationsPanel();
+            CreateSpecialtiesPanel();
+            CreateUsersPanel();
 
-            this.Controls.Add(tabControl);
-            this.Controls.Add(headerPanel);
+            this.Controls.Add(sidebarPanel);
+            this.Controls.Add(contentPanel);
         }
 
-        private void InitializeApplicationsTab(TabPage tab)
+        private void CreateApplicationsPanel()
         {
-            tab.BackColor = Color.White;
-
-            Panel toolPanel = new Panel
+            applicationsPanel = new Panel
             {
-                Dock = DockStyle.Top,
-                Height = 60,
-                BackColor = Color.White
+                Location = new Point(40, 110),
+                Size = new Size(1160, 750),
+                BackColor = Color.Transparent,
+                Visible = true
             };
 
-            Button btnRefresh = CreateStyledButton("🔄 Обновить", 20, 10, ColorTranslator.FromHtml("#2196f3"));
-            btnRefresh.Click += (s, e) => LoadApplications();
-
-            Button btnApprove = CreateStyledButton("✓ Одобрить", 160, 10, ColorTranslator.FromHtml("#4caf50"));
-            btnApprove.Click += (s, e) => ChangeApplicationStatus("Одобрено");
-
-            Button btnReject = CreateStyledButton("✗ Отклонить", 300, 10, ColorTranslator.FromHtml("#f44336"));
-            btnReject.Click += (s, e) => ChangeApplicationStatus("Отклонено");
-
-            Button btnDelete = CreateStyledButton("🗑 Удалить", 440, 10, ColorTranslator.FromHtml("#757575"));
-            btnDelete.Click += (s, e) => DeleteApplication();
-
-            toolPanel.Controls.Add(btnRefresh);
-            toolPanel.Controls.Add(btnApprove);
-            toolPanel.Controls.Add(btnReject);
-            toolPanel.Controls.Add(btnDelete);
-
+            // DataGridView для заявлений
             dgvApplications = new DataGridView
             {
-                Dock = DockStyle.Fill,
-                BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.None,
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                ReadOnly = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                Font = new Font("Segoe UI", 9)
+                Location = new Point(0, 70),
+                Size = new Size(1160, 550),
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            };
+            ModernUIHelper.StyleDataGridView(dgvApplications);
+
+            // Панель с кнопками
+            Panel buttonPanel = new Panel
+            {
+                Location = new Point(0, 640),
+                Size = new Size(1160, 80),
+                BackColor = Color.Transparent
             };
 
-            tab.Controls.Add(dgvApplications);
-            tab.Controls.Add(toolPanel);
+            Button btnApprove = ModernUIHelper.CreateGradientButton(
+                "✓  ОДОБРИТЬ",
+                new Point(0, 10),
+                new Size(220, 50),
+                ModernUIHelper.SuccessColor,
+                ColorTranslator.FromHtml("#00a67d")
+            );
+            btnApprove.Click += (s, e) => ChangeApplicationStatus("Одобрено");
+
+            Button btnReject = ModernUIHelper.CreateGradientButton(
+                "✗  ОТКЛОНИТЬ",
+                new Point(240, 10),
+                new Size(220, 50),
+                ModernUIHelper.DangerColor,
+                ColorTranslator.FromHtml("#e66565")
+            );
+            btnReject.Click += (s, e) => ChangeApplicationStatus("Отклонено");
+
+            Button btnDelete = ModernUIHelper.CreateGradientButton(
+                "🗑  УДАЛИТЬ",
+                new Point(480, 10),
+                new Size(220, 50),
+                ColorTranslator.FromHtml("#636e72"),
+                ColorTranslator.FromHtml("#535c62")
+            );
+            btnDelete.Click += (s, e) => DeleteApplication();
+
+            Button btnRefresh = ModernUIHelper.CreateGradientButton(
+                "🔄  ОБНОВИТЬ",
+                new Point(720, 10),
+                new Size(220, 50),
+                ModernUIHelper.SecondaryAccent,
+                ColorTranslator.FromHtml("#00b5ad")
+            );
+            btnRefresh.Click += (s, e) => LoadApplications();
+
+            buttonPanel.Controls.Add(btnApprove);
+            buttonPanel.Controls.Add(btnReject);
+            buttonPanel.Controls.Add(btnDelete);
+            buttonPanel.Controls.Add(btnRefresh);
+
+            applicationsPanel.Controls.Add(dgvApplications);
+            applicationsPanel.Controls.Add(buttonPanel);
+
+            contentPanel.Controls.Add(applicationsPanel);
         }
 
-        private void InitializeSpecialtiesTab(TabPage tab)
+        private void CreateSpecialtiesPanel()
         {
-            tab.BackColor = Color.White;
-
-            Panel toolPanel = new Panel
+            specialtiesPanel = new Panel
             {
-                Dock = DockStyle.Top,
-                Height = 60,
-                BackColor = Color.White
+                Location = new Point(40, 110),
+                Size = new Size(1160, 750),
+                BackColor = Color.Transparent,
+                Visible = false
             };
 
-            Button btnRefresh = CreateStyledButton("🔄 Обновить", 20, 10, ColorTranslator.FromHtml("#2196f3"));
-            btnRefresh.Click += (s, e) => LoadSpecialties();
-
-            Button btnAdd = CreateStyledButton("➕ Добавить", 160, 10, ColorTranslator.FromHtml("#4caf50"));
-            btnAdd.Click += (s, e) => AddSpecialty();
-
-            Button btnEdit = CreateStyledButton("✏ Изменить", 300, 10, ColorTranslator.FromHtml("#ff9800"));
-            btnEdit.Click += (s, e) => EditSpecialty();
-
-            Button btnDelete = CreateStyledButton("🗑 Удалить", 440, 10, ColorTranslator.FromHtml("#f44336"));
-            btnDelete.Click += (s, e) => DeleteSpecialty();
-
-            toolPanel.Controls.Add(btnRefresh);
-            toolPanel.Controls.Add(btnAdd);
-            toolPanel.Controls.Add(btnEdit);
-            toolPanel.Controls.Add(btnDelete);
-
+            // DataGridView для специальностей
             dgvSpecialties = new DataGridView
             {
-                Dock = DockStyle.Fill,
-                BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.None,
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                ReadOnly = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                Font = new Font("Segoe UI", 9)
+                Location = new Point(0, 70),
+                Size = new Size(1160, 550),
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            };
+            ModernUIHelper.StyleDataGridView(dgvSpecialties);
+
+            // Панель с кнопками
+            Panel buttonPanel = new Panel
+            {
+                Location = new Point(0, 640),
+                Size = new Size(1160, 80),
+                BackColor = Color.Transparent
             };
 
-            tab.Controls.Add(dgvSpecialties);
-            tab.Controls.Add(toolPanel);
+            Button btnAdd = ModernUIHelper.CreateGradientButton(
+                "➕  ДОБАВИТЬ",
+                new Point(0, 10),
+                new Size(220, 50),
+                ModernUIHelper.SuccessColor,
+                ColorTranslator.FromHtml("#00a67d")
+            );
+            btnAdd.Click += (s, e) => AddSpecialty();
+
+            Button btnEdit = ModernUIHelper.CreateGradientButton(
+                "✏  ИЗМЕНИТЬ",
+                new Point(240, 10),
+                new Size(220, 50),
+                ModernUIHelper.WarningColor,
+                ColorTranslator.FromHtml("#f4c05e")
+            );
+            btnEdit.Click += (s, e) => EditSpecialty();
+
+            Button btnDelete = ModernUIHelper.CreateGradientButton(
+                "🗑  УДАЛИТЬ",
+                new Point(480, 10),
+                new Size(220, 50),
+                ModernUIHelper.DangerColor,
+                ColorTranslator.FromHtml("#e66565")
+            );
+            btnDelete.Click += (s, e) => DeleteSpecialty();
+
+            Button btnRefresh = ModernUIHelper.CreateGradientButton(
+                "🔄  ОБНОВИТЬ",
+                new Point(720, 10),
+                new Size(220, 50),
+                ModernUIHelper.SecondaryAccent,
+                ColorTranslator.FromHtml("#00b5ad")
+            );
+            btnRefresh.Click += (s, e) => LoadSpecialties();
+
+            buttonPanel.Controls.Add(btnAdd);
+            buttonPanel.Controls.Add(btnEdit);
+            buttonPanel.Controls.Add(btnDelete);
+            buttonPanel.Controls.Add(btnRefresh);
+
+            specialtiesPanel.Controls.Add(dgvSpecialties);
+            specialtiesPanel.Controls.Add(buttonPanel);
+
+            contentPanel.Controls.Add(specialtiesPanel);
         }
 
-        private void InitializeUsersTab(TabPage tab)
+        private void CreateUsersPanel()
         {
-            tab.BackColor = Color.White;
-
-            Panel toolPanel = new Panel
+            usersPanel = new Panel
             {
-                Dock = DockStyle.Top,
-                Height = 60,
-                BackColor = Color.White
+                Location = new Point(40, 110),
+                Size = new Size(1160, 750),
+                BackColor = Color.Transparent,
+                Visible = false
             };
 
-            Button btnRefresh = CreateStyledButton("🔄 Обновить", 20, 10, ColorTranslator.FromHtml("#2196f3"));
-            btnRefresh.Click += (s, e) => LoadUsers();
-
-            Button btnDelete = CreateStyledButton("🗑 Удалить", 160, 10, ColorTranslator.FromHtml("#f44336"));
-            btnDelete.Click += (s, e) => DeleteUser();
-
-            toolPanel.Controls.Add(btnRefresh);
-            toolPanel.Controls.Add(btnDelete);
-
+            // DataGridView для пользователей
             dgvUsers = new DataGridView
             {
-                Dock = DockStyle.Fill,
-                BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.None,
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                ReadOnly = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                Font = new Font("Segoe UI", 9)
+                Location = new Point(0, 70),
+                Size = new Size(1160, 550),
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            };
+            ModernUIHelper.StyleDataGridView(dgvUsers);
+
+            // Панель с кнопками
+            Panel buttonPanel = new Panel
+            {
+                Location = new Point(0, 640),
+                Size = new Size(1160, 80),
+                BackColor = Color.Transparent
             };
 
-            tab.Controls.Add(dgvUsers);
-            tab.Controls.Add(toolPanel);
+            Button btnDelete = ModernUIHelper.CreateGradientButton(
+                "🗑  УДАЛИТЬ",
+                new Point(0, 10),
+                new Size(220, 50),
+                ModernUIHelper.DangerColor,
+                ColorTranslator.FromHtml("#e66565")
+            );
+            btnDelete.Click += (s, e) => DeleteUser();
+
+            Button btnRefresh = ModernUIHelper.CreateGradientButton(
+                "🔄  ОБНОВИТЬ",
+                new Point(240, 10),
+                new Size(220, 50),
+                ModernUIHelper.SecondaryAccent,
+                ColorTranslator.FromHtml("#00b5ad")
+            );
+            btnRefresh.Click += (s, e) => LoadUsers();
+
+            buttonPanel.Controls.Add(btnDelete);
+            buttonPanel.Controls.Add(btnRefresh);
+
+            usersPanel.Controls.Add(dgvUsers);
+            usersPanel.Controls.Add(buttonPanel);
+
+            contentPanel.Controls.Add(usersPanel);
         }
 
-        private Button CreateStyledButton(string text, int x, int y, Color color)
+        private void ShowApplicationsPanel()
         {
-            Button btn = new Button
-            {
-                Text = text,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                Size = new Size(130, 40),
-                Location = new Point(x, y),
-                BackColor = color,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
-            };
-            btn.FlatAppearance.BorderSize = 0;
-            return btn;
+            applicationsPanel.Visible = true;
+            specialtiesPanel.Visible = false;
+            usersPanel.Visible = false;
+
+            btnApplicationsNav.BackColor = ModernUIHelper.PrimaryAccent;
+            btnApplicationsNav.ForeColor = ModernUIHelper.TextPrimary;
+            btnSpecialtiesNav.BackColor = Color.Transparent;
+            btnSpecialtiesNav.ForeColor = ModernUIHelper.TextSecondary;
+            btnUsersNav.BackColor = Color.Transparent;
+            btnUsersNav.ForeColor = ModernUIHelper.TextSecondary;
+
+            lblPageTitle.Text = "УПРАВЛЕНИЕ ЗАЯВЛЕНИЯМИ";
+        }
+
+        private void ShowSpecialtiesPanel()
+        {
+            applicationsPanel.Visible = false;
+            specialtiesPanel.Visible = true;
+            usersPanel.Visible = false;
+
+            btnApplicationsNav.BackColor = Color.Transparent;
+            btnApplicationsNav.ForeColor = ModernUIHelper.TextSecondary;
+            btnSpecialtiesNav.BackColor = ModernUIHelper.PrimaryAccent;
+            btnSpecialtiesNav.ForeColor = ModernUIHelper.TextPrimary;
+            btnUsersNav.BackColor = Color.Transparent;
+            btnUsersNav.ForeColor = ModernUIHelper.TextSecondary;
+
+            lblPageTitle.Text = "УПРАВЛЕНИЕ СПЕЦИАЛЬНОСТЯМИ";
+        }
+
+        private void ShowUsersPanel()
+        {
+            applicationsPanel.Visible = false;
+            specialtiesPanel.Visible = false;
+            usersPanel.Visible = true;
+
+            btnApplicationsNav.BackColor = Color.Transparent;
+            btnApplicationsNav.ForeColor = ModernUIHelper.TextSecondary;
+            btnSpecialtiesNav.BackColor = Color.Transparent;
+            btnSpecialtiesNav.ForeColor = ModernUIHelper.TextSecondary;
+            btnUsersNav.BackColor = ModernUIHelper.PrimaryAccent;
+            btnUsersNav.ForeColor = ModernUIHelper.TextPrimary;
+
+            lblPageTitle.Text = "УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ";
         }
 
         private void LoadData()
@@ -254,77 +408,82 @@ namespace AdmissionSystem.Forms
 
         private void LoadApplications()
         {
-            var applications = DatabaseHelper.GetAllApplications();
-            var displayData = applications.Select(a => new
-            {
-                Id = a.Id,
-                ФИО = $"{a.LastName} {a.FirstName} {a.MiddleName}",
-                Специальность = DatabaseHelper.GetSpecialtyById(a.SpecialtyId)?.Name ?? "Неизвестно",
-                Телефон = a.Phone,
-                Email = a.Email,
-                Баллы = a.ExamScore,
-                Статус = a.Status,
-                Дата = DateTime.Parse(a.SubmissionDate.ToString()).ToString("dd.MM.yyyy")
-            }).ToList();
+            List<Models.Application> applications = DatabaseHelper.GetAllApplications();
+            dgvApplications.DataSource = null;
+            dgvApplications.DataSource = applications;
 
-            dgvApplications.DataSource = displayData;
-            if (dgvApplications.Columns.Contains("Id"))
-                dgvApplications.Columns["Id"].Visible = false;
+            if (dgvApplications.Columns.Count > 0)
+            {
+                dgvApplications.Columns["Id"].HeaderText = "ID";
+                dgvApplications.Columns["Id"].Width = 60;
+                dgvApplications.Columns["UserId"].Visible = false;
+                dgvApplications.Columns["SpecialtyId"].Visible = false;
+                dgvApplications.Columns["FullName"].HeaderText = "ФИО";
+                dgvApplications.Columns["BirthDate"].HeaderText = "Дата рождения";
+                dgvApplications.Columns["PassportSeries"].HeaderText = "Серия паспорта";
+                dgvApplications.Columns["PassportNumber"].HeaderText = "Номер паспорта";
+                dgvApplications.Columns["Address"].HeaderText = "Адрес";
+                dgvApplications.Columns["Phone"].HeaderText = "Телефон";
+                dgvApplications.Columns["Email"].HeaderText = "Email";
+                dgvApplications.Columns["ExamScore"].HeaderText = "Средний балл";
+                dgvApplications.Columns["Status"].HeaderText = "Статус";
+                dgvApplications.Columns["SpecialtyName"].HeaderText = "Специальность";
+                dgvApplications.Columns["SubmittedAt"].HeaderText = "Дата подачи";
+            }
         }
 
         private void LoadSpecialties()
         {
-            var specialties = DatabaseHelper.GetAllSpecialties();
-            var displayData = specialties.Select(s => new
-            {
-                Id = s.Id,
-                Название = s.Name,
-                Код = s.Code,
-                Мест = s.PlacesCount,
-                МинБалл = s.MinScore,
-                Описание = s.Description
-            }).ToList();
+            List<Specialty> specialties = DatabaseHelper.GetAllSpecialties();
+            dgvSpecialties.DataSource = null;
+            dgvSpecialties.DataSource = specialties;
 
-            dgvSpecialties.DataSource = displayData;
-            if (dgvSpecialties.Columns.Contains("Id"))
-                dgvSpecialties.Columns["Id"].Visible = false;
+            if (dgvSpecialties.Columns.Count > 0)
+            {
+                dgvSpecialties.Columns["Id"].HeaderText = "ID";
+                dgvSpecialties.Columns["Id"].Width = 60;
+                dgvSpecialties.Columns["Name"].HeaderText = "Название";
+                dgvSpecialties.Columns["Code"].HeaderText = "Код";
+                dgvSpecialties.Columns["PlacesCount"].HeaderText = "Мест";
+                dgvSpecialties.Columns["MinScore"].HeaderText = "Мин. балл";
+                dgvSpecialties.Columns["Description"].HeaderText = "Описание";
+            }
         }
 
         private void LoadUsers()
         {
-            var users = DatabaseHelper.GetAllUsers();
-            var displayData = users.Select(u => new
-            {
-                Id = u.Id,
-                Логин = u.Login,
-                ФИО = u.FullName,
-                Роль = u.Role,
-                Дата_регистрации = DateTime.Parse(u.RegistrationDate.ToString()).ToString("dd.MM.yyyy")
-            }).ToList();
+            List<User> users = DatabaseHelper.GetAllUsers();
+            dgvUsers.DataSource = null;
+            dgvUsers.DataSource = users;
 
-            dgvUsers.DataSource = displayData;
-            if (dgvUsers.Columns.Contains("Id"))
-                dgvUsers.Columns["Id"].Visible = false;
+            if (dgvUsers.Columns.Count > 0)
+            {
+                dgvUsers.Columns["Id"].HeaderText = "ID";
+                dgvUsers.Columns["Id"].Width = 60;
+                dgvUsers.Columns["Login"].HeaderText = "Логин";
+                dgvUsers.Columns["Password"].Visible = false;
+                dgvUsers.Columns["FullName"].HeaderText = "ФИО";
+                dgvUsers.Columns["Role"].HeaderText = "Роль";
+            }
         }
 
         private void ChangeApplicationStatus(string status)
         {
             if (dgvApplications.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Выберите заявление!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Выберите заявление!", "Предупреждение",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            int id = (int)dgvApplications.SelectedRows[0].Cells["Id"].Value;
-            var applications = DatabaseHelper.GetAllApplications();
-            var application = applications.FirstOrDefault(a => a.Id == id);
+            var application = (Models.Application)dgvApplications.SelectedRows[0].DataBoundItem;
 
-            if (application != null)
+            if (MessageBox.Show($"Изменить статус заявления на '{status}'?", "Подтверждение",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                application.Status = status;
-                DatabaseHelper.UpdateApplication(application);
+                DatabaseHelper.UpdateApplicationStatus(application.Id, status);
                 LoadApplications();
-                MessageBox.Show($"Статус заявления изменен на '{status}'", "Успех",
+                MessageBox.Show("Статус успешно изменен!", "Успех",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -333,19 +492,20 @@ namespace AdmissionSystem.Forms
         {
             if (dgvApplications.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Выберите заявление!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Выберите заявление для удаления!", "Предупреждение",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var result = MessageBox.Show("Вы уверены, что хотите удалить это заявление?",
-                "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var application = (Models.Application)dgvApplications.SelectedRows[0].DataBoundItem;
 
-            if (result == DialogResult.Yes)
+            if (MessageBox.Show("Удалить выбранное заявление?", "Подтверждение",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                int id = (int)dgvApplications.SelectedRows[0].Cells["Id"].Value;
-                DatabaseHelper.DeleteApplication(id);
+                DatabaseHelper.DeleteApplication(application.Id);
                 LoadApplications();
-                MessageBox.Show("Заявление удалено!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Заявление успешно удалено!", "Успех",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -362,20 +522,16 @@ namespace AdmissionSystem.Forms
         {
             if (dgvSpecialties.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Выберите специальность!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Выберите специальность для редактирования!", "Предупреждение",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            int id = (int)dgvSpecialties.SelectedRows[0].Cells["Id"].Value;
-            var specialty = DatabaseHelper.GetAllSpecialties().FirstOrDefault(s => s.Id == id);
-
-            if (specialty != null)
+            var specialty = (Specialty)dgvSpecialties.SelectedRows[0].DataBoundItem;
+            SpecialtyEditForm form = new SpecialtyEditForm(specialty);
+            if (form.ShowDialog() == DialogResult.OK)
             {
-                SpecialtyEditForm form = new SpecialtyEditForm(specialty);
-                if (form.ShowDialog() == DialogResult.OK)
-                {
-                    LoadSpecialties();
-                }
+                LoadSpecialties();
             }
         }
 
@@ -383,19 +539,20 @@ namespace AdmissionSystem.Forms
         {
             if (dgvSpecialties.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Выберите специальность!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Выберите специальность для удаления!", "Предупреждение",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var result = MessageBox.Show("Вы уверены, что хотите удалить эту специальность?",
-                "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var specialty = (Specialty)dgvSpecialties.SelectedRows[0].DataBoundItem;
 
-            if (result == DialogResult.Yes)
+            if (MessageBox.Show($"Удалить специальность '{specialty.Name}'?", "Подтверждение",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                int id = (int)dgvSpecialties.SelectedRows[0].Cells["Id"].Value;
-                DatabaseHelper.DeleteSpecialty(id);
+                DatabaseHelper.DeleteSpecialty(specialty.Id);
                 LoadSpecialties();
-                MessageBox.Show("Специальность удалена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Специальность успешно удалена!", "Успех",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -403,27 +560,27 @@ namespace AdmissionSystem.Forms
         {
             if (dgvUsers.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Выберите пользователя!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Выберите пользователя для удаления!", "Предупреждение",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            int id = (int)dgvUsers.SelectedRows[0].Cells["Id"].Value;
+            var user = (User)dgvUsers.SelectedRows[0].DataBoundItem;
 
-            if (id == currentUser.Id)
+            if (user.Role == "Admin")
             {
-                MessageBox.Show("Вы не можете удалить сами себя!", "Ошибка",
+                MessageBox.Show("Невозможно удалить администратора!", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            var result = MessageBox.Show("Вы уверены, что хотите удалить этого пользователя?",
-                "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            if (result == DialogResult.Yes)
+            if (MessageBox.Show($"Удалить пользователя '{user.FullName}'?", "Подтверждение",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                DatabaseHelper.DeleteUser(id);
+                DatabaseHelper.DeleteUser(user.Id);
                 LoadUsers();
-                MessageBox.Show("Пользователь удален!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Пользователь успешно удален!", "Успех",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
     }
