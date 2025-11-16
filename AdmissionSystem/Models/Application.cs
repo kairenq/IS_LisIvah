@@ -21,6 +21,11 @@ namespace AdmissionSystem.Models
         public DateTime SubmissionDate { get; set; }
         public string Notes { get; set; }
 
+        // Дополнительные свойства для отображения
+        public string FullName => $"{LastName} {FirstName} {MiddleName}".Trim();
+        public string SpecialtyName { get; set; }
+        public string SubmittedAt => SubmissionDate.ToString("dd.MM.yyyy HH:mm");
+
         public Application()
         {
             SubmissionDate = DateTime.Now;

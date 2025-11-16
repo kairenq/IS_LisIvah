@@ -194,7 +194,10 @@ namespace AdmissionSystem.Database
         {
             using (var connection = new SQLiteConnection(ConnectionString))
             {
-                return connection.Query<Application>("SELECT * FROM Applications").ToList();
+                return connection.Query<Application>(@"
+                    SELECT a.*, s.Name as SpecialtyName
+                    FROM Applications a
+                    LEFT JOIN Specialties s ON a.SpecialtyId = s.Id").ToList();
             }
         }
 
@@ -202,8 +205,11 @@ namespace AdmissionSystem.Database
         {
             using (var connection = new SQLiteConnection(ConnectionString))
             {
-                return connection.Query<Application>(
-                    "SELECT * FROM Applications WHERE UserId = @UserId",
+                return connection.Query<Application>(@"
+                    SELECT a.*, s.Name as SpecialtyName
+                    FROM Applications a
+                    LEFT JOIN Specialties s ON a.SpecialtyId = s.Id
+                    WHERE a.UserId = @UserId",
                     new { UserId = userId }).ToList();
             }
         }

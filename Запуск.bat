@@ -26,9 +26,22 @@ if exist "AdmissionSystem\bin\Release\net6.0-windows\AdmissionSystem.exe" (
 ) else (
     echo ERROR: Executable file not found!
     echo.
-    echo Please build the project first:
-    echo 1. Run "Build.bat"
-    echo 2. Or open project in Visual Studio and Build
+    echo Trying to build the project automatically...
     echo.
-    pause
+    call Build.bat
+    if %errorlevel% equ 0 (
+        echo.
+        echo Build successful! Starting program...
+        echo.
+        if exist "AdmissionSystem\bin\Release\net6.0-windows\AdmissionSystem.exe" (
+            start "" "AdmissionSystem\bin\Release\net6.0-windows\AdmissionSystem.exe"
+            echo Program started!
+            timeout /t 2 >nul
+        )
+    ) else (
+        echo.
+        echo Build failed! Please check the errors above.
+        echo.
+        pause
+    )
 )
