@@ -287,15 +287,20 @@ namespace AdmissionSystem.Forms
             dgvSpecialties.DataSource = null;
             dgvSpecialties.DataSource = specialties;
 
-            if (dgvSpecialties.Columns.Count > 0)
+            if (dgvSpecialties.Columns.Count > 0 && dgvSpecialties.Columns["Id"] != null)
             {
                 dgvSpecialties.Columns["Id"].HeaderText = "ID";
                 dgvSpecialties.Columns["Id"].Width = 60;
-                dgvSpecialties.Columns["Name"].HeaderText = "Название";
-                dgvSpecialties.Columns["Code"].HeaderText = "Код";
-                dgvSpecialties.Columns["PlacesCount"].HeaderText = "Мест";
-                dgvSpecialties.Columns["MinScore"].HeaderText = "Мин. балл";
-                dgvSpecialties.Columns["Description"].HeaderText = "Описание";
+                if (dgvSpecialties.Columns["Name"] != null)
+                    dgvSpecialties.Columns["Name"].HeaderText = "Название";
+                if (dgvSpecialties.Columns["Code"] != null)
+                    dgvSpecialties.Columns["Code"].HeaderText = "Код";
+                if (dgvSpecialties.Columns["PlacesCount"] != null)
+                    dgvSpecialties.Columns["PlacesCount"].HeaderText = "Мест";
+                if (dgvSpecialties.Columns["MinScore"] != null)
+                    dgvSpecialties.Columns["MinScore"].HeaderText = "Мин. балл";
+                if (dgvSpecialties.Columns["Description"] != null)
+                    dgvSpecialties.Columns["Description"].HeaderText = "Описание";
             }
         }
 
@@ -305,23 +310,36 @@ namespace AdmissionSystem.Forms
             dgvApplications.DataSource = null;
             dgvApplications.DataSource = applications;
 
-            if (dgvApplications.Columns.Count > 0)
+            if (dgvApplications.Columns.Count > 0 && dgvApplications.Columns["Id"] != null)
             {
                 dgvApplications.Columns["Id"].HeaderText = "ID";
                 dgvApplications.Columns["Id"].Width = 60;
-                dgvApplications.Columns["UserId"].Visible = false;
-                dgvApplications.Columns["SpecialtyId"].Visible = false;
-                dgvApplications.Columns["FullName"].HeaderText = "ФИО";
-                dgvApplications.Columns["BirthDate"].HeaderText = "Дата рождения";
-                dgvApplications.Columns["PassportSeries"].HeaderText = "Серия";
-                dgvApplications.Columns["PassportNumber"].HeaderText = "Номер";
-                dgvApplications.Columns["Address"].HeaderText = "Адрес";
-                dgvApplications.Columns["Phone"].HeaderText = "Телефон";
-                dgvApplications.Columns["Email"].HeaderText = "Email";
-                dgvApplications.Columns["ExamScore"].HeaderText = "Средний балл";
-                dgvApplications.Columns["Status"].HeaderText = "Статус";
-                dgvApplications.Columns["SpecialtyName"].HeaderText = "Специальность";
-                dgvApplications.Columns["SubmittedAt"].HeaderText = "Дата подачи";
+                if (dgvApplications.Columns["UserId"] != null)
+                    dgvApplications.Columns["UserId"].Visible = false;
+                if (dgvApplications.Columns["SpecialtyId"] != null)
+                    dgvApplications.Columns["SpecialtyId"].Visible = false;
+                if (dgvApplications.Columns["FullName"] != null)
+                    dgvApplications.Columns["FullName"].HeaderText = "ФИО";
+                if (dgvApplications.Columns["BirthDate"] != null)
+                    dgvApplications.Columns["BirthDate"].HeaderText = "Дата рождения";
+                if (dgvApplications.Columns["PassportSeries"] != null)
+                    dgvApplications.Columns["PassportSeries"].HeaderText = "Серия";
+                if (dgvApplications.Columns["PassportNumber"] != null)
+                    dgvApplications.Columns["PassportNumber"].HeaderText = "Номер";
+                if (dgvApplications.Columns["Address"] != null)
+                    dgvApplications.Columns["Address"].HeaderText = "Адрес";
+                if (dgvApplications.Columns["Phone"] != null)
+                    dgvApplications.Columns["Phone"].HeaderText = "Телефон";
+                if (dgvApplications.Columns["Email"] != null)
+                    dgvApplications.Columns["Email"].HeaderText = "Email";
+                if (dgvApplications.Columns["ExamScore"] != null)
+                    dgvApplications.Columns["ExamScore"].HeaderText = "Средний балл";
+                if (dgvApplications.Columns["Status"] != null)
+                    dgvApplications.Columns["Status"].HeaderText = "Статус";
+                if (dgvApplications.Columns["SpecialtyName"] != null)
+                    dgvApplications.Columns["SpecialtyName"].HeaderText = "Специальность";
+                if (dgvApplications.Columns["SubmittedAt"] != null)
+                    dgvApplications.Columns["SubmittedAt"].HeaderText = "Дата подачи";
             }
         }
 
