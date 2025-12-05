@@ -269,5 +269,160 @@ namespace AdmissionSystem.UI
                 BackColor = ColorTranslator.FromHtml("#2d3561")
             };
         }
+
+        /// <summary>
+        /// Создает карточку заявления
+        /// </summary>
+        public static Panel CreateApplicationCard(Models.Application app, EventHandler onClick = null)
+        {
+            var card = new Panel
+            {
+                Size = new Size(350, 200),
+                BackColor = CardBackground,
+                Padding = new Padding(15),
+                Cursor = Cursors.Hand,
+                Tag = app // Сохраняем объект заявления
+            };
+
+            // Определяем цвет статуса
+            Color statusColor;
+            switch (app.Status)
+            {
+                case "Одобрено":
+                    statusColor = SuccessColor;
+                    break;
+                case "Отклонено":
+                    statusColor = DangerColor;
+                    break;
+                default:
+                    statusColor = WarningColor;
+                    break;
+            }
+
+            // Стиль карточки
+            card.Paint += (s, e) =>
+            {
+                var panel = (Panel)s;
+                // Заливка
+                using (var brush = new SolidBrush(panel.BackColor))
+                {
+                    e.Graphics.FillRectangle(brush, panel.ClientRectangle);
+                }
+                
+                // Рамка с цветом статуса сверху
+                using (var pen = new Pen(statusColor, 3))
+                {
+                    e.Graphics.DrawRectangle(pen, 0, 0, panel.Width - 1, panel.Height - 1);
+                }
+                
+                // Тень
+                ControlPaint.DrawBorder(e.Graphics, panel.ClientRectangle,
+                    Color.FromArgb(40, 0, 0, 0), 0, ButtonBorderStyle.None,
+                    Color.FromArgb(40, 0, 0, 0), 5, ButtonBorderStyle.None,
+                    Color.FromArgb(40, 0, 0, 0), 0, ButtonBorderStyle.None,
+                    Color.FromArgb(40, 0, 0, 0), 5, ButtonBorderStyle.None);
+            };
+
+            // ФИО (крупно)
+            Label lblName = new Label
+            {
+                Text = app.FullName.Length > 25 ? app.FullName.Substring(0, 22) + "..." : app.FullName,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = TextPrimary,
+                Location = new Point(10, 10),
+                Size = new Size(310, 30),
+                BackColor = Color.Transparent
+            };
+
+            // Специальность
+            Label lblSpecialty = new Label
+            {
+                Text = "Специальность: " + (app.SpecialtyName?.Length > 25 ? app.SpecialtyName.Substring(0, 22) + "..." : app.SpecialtyName ?? "Не указана"),
+                Font = new Font("Segoe UI", 9),
+                ForeColor = TextSecondary,
+                Location = new Point(10, 45),
+                Size = new Size(310, 25),
+                BackColor = Color.Transparent
+            };
+
+            // Балл
+            Label lblScore = new Label
+            {
+                Text = $"Балл: {app.ExamScore:F2}",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = TextSecondary,
+                Location = new Point(10, 70),
+                Size = new Size(150, 25),
+                BackColor = Color.Transparent
+            };
+
+            // Дата
+            Label lblDate = new Label
+            {
+                Text = $"Дата: {app.SubmittedAt}",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = TextMuted,
+                Location = new Point(10, 95),
+                Size = new Size(310, 25),
+                BackColor = Color.Transparent
+            };
+
+            // Паспортные данные
+            Label lblPassport = new Label
+            {
+                Text = $"Паспорт: {app.PassportSeries} {app.PassportNumber}",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = TextMuted,
+                Location = new Point(10, 120),
+                Size = new Size(310, 25),
+                BackColor = Color.Transparent
+            };
+
+            // Статус (в правом нижнем углу)
+            Label lblStatus = new Label
+            {
+                Text = app.Status.ToUpper(),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                ForeColor = statusColor,
+                Location = new Point(170, 155),
+                Size = new Size(150, 30),
+                TextAlign = ContentAlignment.MiddleRight,
+                BackColor = Color.Transparent
+            };
+
+            // Добавляем все элементы на карточку
+            card.Controls.Add(lblName);
+            card.Controls.Add(lblSpecialty);
+            card.Controls.Add(lblScore);
+            card.Controls.Add(lblDate);
+            card.Controls.Add(lblPassport);
+            card.Controls.Add(lblStatus);
+
+            // Обработчик клика
+            if (onClick != null)
+            {
+                card.Click += onClick;
+                foreach (Control control in card.Controls)
+                {
+                    control.Click += onClick;
+                    control.Cursor = Cursors.Hand;
+                }
+            }
+
+            // Эффект при наведении
+            card.MouseEnter += (s, e) =>
+            {
+                card.BackColor = ColorTranslator.FromHtml("#21254d");
+                card.Refresh();
+            };
+
+            card.MouseLeave += (s, e) =>
+            {
+                card.BackColor = CardBackground;
+                card.Refresh();
+            };
+
+            return card;
+        }
     }
 }
