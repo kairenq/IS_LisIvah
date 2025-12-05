@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 using AdmissionSystem.Database;
@@ -17,11 +16,12 @@ namespace AdmissionSystem.Forms
         private Panel contentPanel;
         private Panel specialtiesPanel;
         private Panel applicationsPanel;
+        private FlowLayoutPanel cardsFlowPanel;
         private DataGridView dgvSpecialties;
-        private DataGridView dgvApplications;
         private Button btnSpecialtiesNav;
         private Button btnApplicationsNav;
         private Label lblPageTitle;
+        private Button btnRefreshCards;
 
         public UserPanel(User user)
         {
@@ -45,8 +45,8 @@ namespace AdmissionSystem.Forms
             // Логотип и приветствие
             Label lblLogo = new Label
             {
-                Text = "👤",
-                Font = new Font("Segoe UI", 48),
+                Text = "ПК",
+                Font = new Font("Segoe UI", 48, FontStyle.Bold),
                 ForeColor = ModernUIHelper.SecondaryAccent,
                 Size = new Size(280, 80),
                 Location = new Point(0, 30),
@@ -79,16 +79,16 @@ namespace AdmissionSystem.Forms
             Panel divider = ModernUIHelper.CreateDivider(new Point(20, 240), 240);
 
             // Кнопки навигации
-            btnSpecialtiesNav = ModernUIHelper.CreateSidebarButton("🎓  Специальности", 270, true);
+            btnSpecialtiesNav = ModernUIHelper.CreateSidebarButton("Специальности", 270, true);
             btnSpecialtiesNav.Click += (s, e) => ShowSpecialtiesPanel();
 
-            btnApplicationsNav = ModernUIHelper.CreateSidebarButton("📋  Мои заявления", 340);
+            btnApplicationsNav = ModernUIHelper.CreateSidebarButton("Мои заявления", 340);
             btnApplicationsNav.Click += (s, e) => ShowApplicationsPanel();
 
             // Кнопка выхода
             Button btnLogout = new Button
             {
-                Text = "🚪  Выход",
+                Text = "Выход",
                 Location = new Point(0, 800),
                 Size = new Size(280, 55),
                 FlatStyle = FlatStyle.Flat,
@@ -169,7 +169,7 @@ namespace AdmissionSystem.Forms
             };
 
             Button btnSubmit = ModernUIHelper.CreateGradientButton(
-                "➕  ПОДАТЬ ЗАЯВЛЕНИЕ",
+                "ПОДАТЬ ЗАЯВЛЕНИЕ",
                 new Point(0, 10),
                 new Size(280, 50),
                 ModernUIHelper.PrimaryAccent,
@@ -178,7 +178,7 @@ namespace AdmissionSystem.Forms
             btnSubmit.Click += (s, e) => SubmitApplication();
 
             Button btnRefresh = ModernUIHelper.CreateGradientButton(
-                "🔄  ОБНОВИТЬ",
+                "ОБНОВИТЬ",
                 new Point(300, 10),
                 new Size(220, 50),
                 ModernUIHelper.SecondaryAccent,
@@ -205,14 +205,40 @@ namespace AdmissionSystem.Forms
                 Visible = false
             };
 
-            // DataGridView для заявлений
-            dgvApplications = new DataGridView
+            // Заголовок панели заявлений
+            Label lblAppsTitle = new Label
             {
-                Location = new Point(0, 70),
-                Size = new Size(1160, 550),
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+                Text = "МОИ ЗАЯВЛЕНИЯ",
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                ForeColor = ModernUIHelper.TextSecondary,
+                Location = new Point(0, 10),
+                Size = new Size(1160, 40),
+                BackColor = Color.Transparent
             };
-            ModernUIHelper.StyleDataGridView(dgvApplications);
+
+            // Контейнер для карточек с прокруткой
+            Panel scrollPanel = new Panel
+            {
+                Location = new Point(0, 60),
+                Size = new Size(1140, 550),
+                BackColor = Color.Transparent,
+                AutoScroll = true
+            };
+
+            // FlowLayoutPanel для автоматического расположения карточек
+            cardsFlowPanel = new FlowLayoutPanel
+            {
+                Location = new Point(0, 0),
+                Size = new Size(1120, 550),
+                BackColor = Color.Transparent,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = true,
+                Padding = new Padding(10)
+            };
+
+            scrollPanel.Controls.Add(cardsFlowPanel);
 
             // Панель с кнопками
             Panel buttonPanel = new Panel
@@ -223,7 +249,7 @@ namespace AdmissionSystem.Forms
             };
 
             Button btnDelete = ModernUIHelper.CreateGradientButton(
-                "🗑  УДАЛИТЬ",
+                "УДАЛИТЬ",
                 new Point(0, 10),
                 new Size(220, 50),
                 ModernUIHelper.DangerColor,
@@ -231,19 +257,20 @@ namespace AdmissionSystem.Forms
             );
             btnDelete.Click += (s, e) => DeleteApplication();
 
-            Button btnRefresh = ModernUIHelper.CreateGradientButton(
-                "🔄  ОБНОВИТЬ",
+            btnRefreshCards = ModernUIHelper.CreateGradientButton(
+                "ОБНОВИТЬ",
                 new Point(240, 10),
                 new Size(220, 50),
                 ModernUIHelper.SecondaryAccent,
                 ColorTranslator.FromHtml("#00b5ad")
             );
-            btnRefresh.Click += (s, e) => LoadApplications();
+            btnRefreshCards.Click += (s, e) => LoadApplicationsCards();
 
             buttonPanel.Controls.Add(btnDelete);
-            buttonPanel.Controls.Add(btnRefresh);
+            buttonPanel.Controls.Add(btnRefreshCards);
 
-            applicationsPanel.Controls.Add(dgvApplications);
+            applicationsPanel.Controls.Add(lblAppsTitle);
+            applicationsPanel.Controls.Add(scrollPanel);
             applicationsPanel.Controls.Add(buttonPanel);
 
             contentPanel.Controls.Add(applicationsPanel);
@@ -273,6 +300,9 @@ namespace AdmissionSystem.Forms
             btnApplicationsNav.ForeColor = ModernUIHelper.TextPrimary;
 
             lblPageTitle.Text = "МОИ ЗАЯВЛЕНИЯ";
+            
+            // Обновляем карточки при переходе на вкладку
+            LoadApplicationsCards();
         }
 
         private void LoadData()
@@ -283,11 +313,6 @@ namespace AdmissionSystem.Forms
                     LoadSpecialties();
                 else
                     MessageBox.Show("ERROR: dgvSpecialties is null!", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                if (dgvApplications != null)
-                    LoadApplications();
-                else
-                    MessageBox.Show("ERROR: dgvApplications is null!", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
@@ -319,42 +344,47 @@ namespace AdmissionSystem.Forms
             }
         }
 
-        private void LoadApplications()
+        private void LoadApplicationsCards()
         {
-            List<Models.Application> applications = DatabaseHelper.GetUserApplications(currentUser.Id);
-            dgvApplications.DataSource = null;
-            dgvApplications.DataSource = applications;
+            // Очищаем старые карточки
+            cardsFlowPanel.Controls.Clear();
 
-            if (dgvApplications.Columns.Count > 0 && dgvApplications.Columns["Id"] != null)
+            // Получаем заявления пользователя
+            List<Models.Application> applications = DatabaseHelper.GetUserApplications(currentUser.Id);
+
+            if (applications.Count == 0)
             {
-                dgvApplications.Columns["Id"].HeaderText = "ID";
-                dgvApplications.Columns["Id"].Width = 60;
-                if (dgvApplications.Columns["UserId"] != null)
-                    dgvApplications.Columns["UserId"].Visible = false;
-                if (dgvApplications.Columns["SpecialtyId"] != null)
-                    dgvApplications.Columns["SpecialtyId"].Visible = false;
-                if (dgvApplications.Columns["FullName"] != null)
-                    dgvApplications.Columns["FullName"].HeaderText = "ФИО";
-                if (dgvApplications.Columns["BirthDate"] != null)
-                    dgvApplications.Columns["BirthDate"].HeaderText = "Дата рождения";
-                if (dgvApplications.Columns["PassportSeries"] != null)
-                    dgvApplications.Columns["PassportSeries"].HeaderText = "Серия";
-                if (dgvApplications.Columns["PassportNumber"] != null)
-                    dgvApplications.Columns["PassportNumber"].HeaderText = "Номер";
-                if (dgvApplications.Columns["Address"] != null)
-                    dgvApplications.Columns["Address"].HeaderText = "Адрес";
-                if (dgvApplications.Columns["Phone"] != null)
-                    dgvApplications.Columns["Phone"].HeaderText = "Телефон";
-                if (dgvApplications.Columns["Email"] != null)
-                    dgvApplications.Columns["Email"].HeaderText = "Email";
-                if (dgvApplications.Columns["ExamScore"] != null)
-                    dgvApplications.Columns["ExamScore"].HeaderText = "Средний балл";
-                if (dgvApplications.Columns["Status"] != null)
-                    dgvApplications.Columns["Status"].HeaderText = "Статус";
-                if (dgvApplications.Columns["SpecialtyName"] != null)
-                    dgvApplications.Columns["SpecialtyName"].HeaderText = "Специальность";
-                if (dgvApplications.Columns["SubmittedAt"] != null)
-                    dgvApplications.Columns["SubmittedAt"].HeaderText = "Дата подачи";
+                // Сообщение если нет заявлений
+                Label lblNoApps = new Label
+                {
+                    Text = "У вас пока нет заявлений.\nПерейдите в раздел 'Специальности' чтобы подать заявление.",
+                    Font = new Font("Segoe UI", 12),
+                    ForeColor = ModernUIHelper.TextSecondary,
+                    Size = new Size(1100, 100),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    BackColor = Color.Transparent
+                };
+                cardsFlowPanel.Controls.Add(lblNoApps);
+                return;
+            }
+
+            // Создаем карточки для каждого заявления
+            foreach (var app in applications)
+            {
+                var card = ModernUIHelper.CreateApplicationCard(app, (s, e) =>
+                {
+                    // При клике на карточку открываем детали
+                    ApplicationDetailsForm detailsForm = new ApplicationDetailsForm(app, false);
+                    detailsForm.ShowDialog();
+                    
+                    // Обновляем карточки после закрытия формы (если статус изменился)
+                    if (detailsForm.DialogResult == DialogResult.OK)
+                    {
+                        LoadApplicationsCards();
+                    }
+                });
+                
+                cardsFlowPanel.Controls.Add(card);
             }
         }
 
@@ -371,26 +401,38 @@ namespace AdmissionSystem.Forms
             ApplicationForm form = new ApplicationForm(currentUser, specialty);
             if (form.ShowDialog() == DialogResult.OK)
             {
-                LoadApplications();
+                LoadApplicationsCards();
+                ShowApplicationsPanel();
             }
         }
 
         private void DeleteApplication()
         {
-            if (dgvApplications.SelectedRows.Count == 0)
+            // Находим выбранную карточку
+            Panel selectedCard = null;
+            foreach (Control control in cardsFlowPanel.Controls)
             {
-                MessageBox.Show("Выберите заявление для удаления!", "Предупреждение",
+                if (control is Panel panel && panel.BackColor == ColorTranslator.FromHtml("#21254d"))
+                {
+                    selectedCard = panel;
+                    break;
+                }
+            }
+
+            if (selectedCard == null)
+            {
+                MessageBox.Show("Выберите заявление для удаления (кликните на карточку)!", "Предупреждение",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var application = (Models.Application)dgvApplications.SelectedRows[0].DataBoundItem;
+            var application = (Models.Application)selectedCard.Tag;
 
             if (MessageBox.Show("Удалить выбранное заявление?", "Подтверждение",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 DatabaseHelper.DeleteApplication(application.Id);
-                LoadApplications();
+                LoadApplicationsCards();
                 MessageBox.Show("Заявление успешно удалено!", "Успех",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
