@@ -485,24 +485,29 @@ namespace AdmissionSystem.Forms
             // Создаем карточки для каждого заявления
             foreach (var app in applications)
             {
-                Panel card = ModernUIHelper.CreateApplicationCard(app, (s, e) =>
+                // Создаем локальную копию для использования в лямбда-выражении
+                var currentApp = app;
+                
+                Panel card = ModernUIHelper.CreateApplicationCard(currentApp, (s, e) =>
                 {
+                    var clickedCard = (Panel)s;
+                    
                     // Снимаем выделение с предыдущей карточки
-                    if (selectedApplicationCard != null)
+                    if (selectedApplicationCard != null && selectedApplicationCard != clickedCard)
                     {
                         selectedApplicationCard.BackColor = ModernUIHelper.CardBackground;
                         selectedApplicationCard.Refresh();
                     }
 
                     // Выделяем текущую карточку
-                    card.BackColor = ColorTranslator.FromHtml("#21254d");
-                    card.Refresh();
-                    selectedApplicationCard = card;
+                    clickedCard.BackColor = ColorTranslator.FromHtml("#21254d");
+                    clickedCard.Refresh();
+                    selectedApplicationCard = clickedCard;
 
                     // При двойном клике открываем детали
                     if (e is MouseEventArgs mouseArgs && mouseArgs.Clicks == 2)
                     {
-                        ApplicationDetailsForm detailsForm = new ApplicationDetailsForm(app, true);
+                        ApplicationDetailsForm detailsForm = new ApplicationDetailsForm(currentApp, true);
                         detailsForm.ShowDialog();
                         
                         // Обновляем карточки после закрытия формы
