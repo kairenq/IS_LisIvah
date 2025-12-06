@@ -286,7 +286,8 @@ namespace AdmissionSystem.UI
 
             // Определяем цвет статуса
             Color statusColor;
-            switch (app.Status)
+            string status = app.Status ?? "На рассмотрении";
+            switch (status)
             {
                 case "Одобрено":
                     statusColor = SuccessColor;
@@ -324,9 +325,10 @@ namespace AdmissionSystem.UI
             };
 
             // ФИО (крупно)
+            string fullName = app.FullName ?? "Не указано";
             Label lblName = new Label
             {
-                Text = app.FullName.Length > 25 ? app.FullName.Substring(0, 22) + "..." : app.FullName,
+                Text = fullName.Length > 25 ? fullName.Substring(0, 22) + "..." : fullName,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 ForeColor = TextPrimary,
                 Location = new Point(10, 10),
@@ -335,9 +337,10 @@ namespace AdmissionSystem.UI
             };
 
             // Специальность
+            string specialtyName = app.SpecialtyName ?? "Не указана";
             Label lblSpecialty = new Label
             {
-                Text = "Специальность: " + (app.SpecialtyName?.Length > 25 ? app.SpecialtyName.Substring(0, 22) + "..." : app.SpecialtyName ?? "Не указана"),
+                Text = "Специальность: " + (specialtyName.Length > 25 ? specialtyName.Substring(0, 22) + "..." : specialtyName),
                 Font = new Font("Segoe UI", 9),
                 ForeColor = TextSecondary,
                 Location = new Point(10, 45),
@@ -357,9 +360,10 @@ namespace AdmissionSystem.UI
             };
 
             // Дата
+            string submittedAt = app.SubmittedAt ?? "Не указана";
             Label lblDate = new Label
             {
-                Text = $"Дата: {app.SubmittedAt}",
+                Text = $"Дата: {submittedAt}",
                 Font = new Font("Segoe UI", 9),
                 ForeColor = TextMuted,
                 Location = new Point(10, 95),
@@ -368,9 +372,11 @@ namespace AdmissionSystem.UI
             };
 
             // Паспортные данные
+            string passportSeries = app.PassportSeries ?? "";
+            string passportNumber = app.PassportNumber ?? "";
             Label lblPassport = new Label
             {
-                Text = $"Паспорт: {app.PassportSeries} {app.PassportNumber}",
+                Text = $"Паспорт: {passportSeries} {passportNumber}",
                 Font = new Font("Segoe UI", 9),
                 ForeColor = TextMuted,
                 Location = new Point(10, 120),
@@ -381,7 +387,7 @@ namespace AdmissionSystem.UI
             // Статус (в правом нижнем углу)
             Label lblStatus = new Label
             {
-                Text = app.Status.ToUpper(),
+                Text = status.ToUpper(),
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = statusColor,
                 Location = new Point(170, 155),
