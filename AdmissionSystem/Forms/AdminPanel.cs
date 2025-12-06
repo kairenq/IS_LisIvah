@@ -485,7 +485,7 @@ namespace AdmissionSystem.Forms
             // Создаем карточки для каждого заявления
             foreach (var app in applications)
             {
-                var card = ModernUIHelper.CreateApplicationCard(app, (s, e) =>
+                Panel card = ModernUIHelper.CreateApplicationCard(app, (s, e) =>
                 {
                     // Снимаем выделение с предыдущей карточки
                     if (selectedApplicationCard != null)
