@@ -1,16 +1,17 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using AdmissionSystem.Database;
 using AdmissionSystem.Models;
 
 namespace AdmissionSystem.Forms
 {
     public partial class ApplicationDetailsForm : Form
     {
-        private Application application;
+        private AdmissionSystem.Models.Application application;
         private bool isAdminMode;
 
-        public ApplicationDetailsForm(Application app, bool isAdmin = false)
+        public ApplicationDetailsForm(AdmissionSystem.Models.Application app, bool isAdmin = false)
         {
             application = app;
             isAdminMode = isAdmin;
@@ -32,7 +33,7 @@ namespace AdmissionSystem.Forms
             {
                 Text = "ПОДРОБНАЯ ИНФОРМАЦИЯ О ЗАЯВЛЕНИИ",
                 Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = ModernUIHelper.TextPrimary,
+                ForeColor = UI.ModernUIHelper.TextPrimary,
                 Size = new Size(550, 40),
                 Location = new Point(0, 10),
                 TextAlign = ContentAlignment.MiddleCenter
@@ -43,7 +44,7 @@ namespace AdmissionSystem.Forms
             {
                 Location = new Point(0, 60),
                 Size = new Size(560, 500),
-                BackColor = ModernUIHelper.CardBackground,
+                BackColor = UI.ModernUIHelper.CardBackground,
                 Padding = new Padding(20)
             };
 
@@ -76,8 +77,8 @@ namespace AdmissionSystem.Forms
             AddInfoRow(infoPanel, "Средний балл:", application.ExamScore.ToString("F2"), ref yPos, labelWidth, valueWidth);
             
             // Статус
-            Color statusColor = application.Status == "Одобрено" ? ModernUIHelper.SuccessColor :
-                               application.Status == "Отклонено" ? ModernUIHelper.DangerColor : ModernUIHelper.WarningColor;
+            Color statusColor = application.Status == "Одобрено" ? UI.ModernUIHelper.SuccessColor :
+                               application.Status == "Отклонено" ? UI.ModernUIHelper.DangerColor : UI.ModernUIHelper.WarningColor;
             AddInfoRow(infoPanel, "Статус:", application.Status, ref yPos, labelWidth, valueWidth, statusColor);
             
             // Дата подачи
@@ -97,11 +98,11 @@ namespace AdmissionSystem.Forms
                 BackColor = Color.Transparent
             };
 
-            Button btnClose = ModernUIHelper.CreateGradientButton(
+            Button btnClose = UI.ModernUIHelper.CreateGradientButton(
                 "ЗАКРЫТЬ",
                 new Point(200, 20),
                 new Size(160, 45),
-                ModernUIHelper.SecondaryAccent,
+                UI.ModernUIHelper.SecondaryAccent,
                 ColorTranslator.FromHtml("#00b5ad")
             );
             btnClose.Click += (s, e) => this.Close();
@@ -109,20 +110,20 @@ namespace AdmissionSystem.Forms
             // Кнопки действий для админа
             if (isAdminMode && application.Status == "На рассмотрении")
             {
-                Button btnApprove = ModernUIHelper.CreateGradientButton(
+                Button btnApprove = UI.ModernUIHelper.CreateGradientButton(
                     "ОДОБРИТЬ",
                     new Point(20, 20),
                     new Size(160, 45),
-                    ModernUIHelper.SuccessColor,
+                    UI.ModernUIHelper.SuccessColor,
                     ColorTranslator.FromHtml("#00a67d")
                 );
                 btnApprove.Click += (s, e) => ApproveApplication();
 
-                Button btnReject = ModernUIHelper.CreateGradientButton(
+                Button btnReject = UI.ModernUIHelper.CreateGradientButton(
                     "ОТКЛОНИТЬ",
                     new Point(380, 20),
                     new Size(160, 45),
-                    ModernUIHelper.DangerColor,
+                    UI.ModernUIHelper.DangerColor,
                     ColorTranslator.FromHtml("#e66565")
                 );
                 btnReject.Click += (s, e) => RejectApplication();
@@ -146,7 +147,7 @@ namespace AdmissionSystem.Forms
             {
                 Text = label,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                ForeColor = ModernUIHelper.TextSecondary,
+                ForeColor = UI.ModernUIHelper.TextSecondary,
                 Location = new Point(0, yPos),
                 Size = new Size(labelWidth, 25),
                 BackColor = Color.Transparent
@@ -157,7 +158,7 @@ namespace AdmissionSystem.Forms
             {
                 Text = value,
                 Font = new Font("Segoe UI", 10),
-                ForeColor = valueColor ?? ModernUIHelper.TextPrimary,
+                ForeColor = valueColor ?? UI.ModernUIHelper.TextPrimary,
                 Location = new Point(labelWidth, yPos),
                 Size = new Size(valueWidth, 25),
                 BackColor = Color.Transparent
