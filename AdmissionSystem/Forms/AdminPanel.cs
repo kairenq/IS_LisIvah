@@ -450,10 +450,10 @@ namespace AdmissionSystem.Forms
                 LoadSpecialties();
                 LoadUsers();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show($"Ошибка при загрузке данных:\n\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // Не показываем ошибку пользователю
+                // Можно добавить логирование если нужно
             }
         }
 
@@ -463,50 +463,50 @@ namespace AdmissionSystem.Forms
             appsCardsPanel.Controls.Clear();
             selectedApplicationCard = null;
 
-            // Получаем все заявления
-            List<Models.Application> applications = DatabaseHelper.GetAllApplications();
-
-            if (applications.Count == 0)
+            try
             {
-                // Сообщение если нет заявлений
-                Label lblNoApps = new Label
-                {
-                    Text = "Заявлений пока нет.",
-                    Font = new Font("Segoe UI", 12),
-                    ForeColor = ModernUIHelper.TextSecondary,
-                    Size = new Size(1100, 100),
-                    TextAlign = ContentAlignment.MiddleCenter,
-                    BackColor = Color.Transparent
-                };
-                appsCardsPanel.Controls.Add(lblNoApps);
-                return;
-            }
+                // Получаем все заявления
+                List<Models.Application> applications = DatabaseHelper.GetAllApplications();
 
-            // Создаем карточки для каждого заявления
-            foreach (var app in applications)
-            {
-                // Создаем локальную копию для использования в лямбда-выражении
-                var currentApp = app;
-                
-                Panel card = ModernUIHelper.CreateApplicationCard(currentApp, (s, e) =>
+                if (applications.Count == 0)
                 {
-                    var clickedCard = (Panel)s;
+                    // Сообщение если нет заявлений
+                    Label lblNoApps = new Label
+                    {
+                        Text = "Заявлений пока нет.",
+                        Font = new Font("Segoe UI", 12),
+                        ForeColor = ModernUIHelper.TextSecondary,
+                        Size = new Size(1100, 100),
+                        TextAlign = ContentAlignment.MiddleCenter,
+                        BackColor = Color.Transparent
+                    };
+                    appsCardsPanel.Controls.Add(lblNoApps);
+                    return;
+                }
+
+                // Создаем карточки для каждого заявления
+                foreach (var app in applications)
+                {
+                    // Создаем локальную копию для использования в лямбда-выражении
+                    var currentApp = app;
                     
-                    // Снимаем выделение с предыдущей карточки
-                    if (selectedApplicationCard != null && selectedApplicationCard != clickedCard)
+                    Panel card = ModernUIHelper.CreateApplicationCard(currentApp, (s, e) =>
                     {
-                        selectedApplicationCard.BackColor = ModernUIHelper.CardBackground;
-                        selectedApplicationCard.Refresh();
-                    }
+                        var clickedCard = (Panel)s;
+                        
+                        // Снимаем выделение с предыдущей карточки
+                        if (selectedApplicationCard != null && selectedApplicationCard != clickedCard)
+                        {
+                            selectedApplicationCard.BackColor = ModernUIHelper.CardBackground;
+                            selectedApplicationCard.Refresh();
+                        }
 
-                    // Выделяем текущую карточку
-                    clickedCard.BackColor = ColorTranslator.FromHtml("#21254d");
-                    clickedCard.Refresh();
-                    selectedApplicationCard = clickedCard;
+                        // Выделяем текущую карточку
+                        clickedCard.BackColor = ColorTranslator.FromHtml("#21254d");
+                        clickedCard.Refresh();
+                        selectedApplicationCard = clickedCard;
 
-                    // При двойном клике открываем детали
-                    if (e is MouseEventArgs mouseArgs && mouseArgs.Clicks == 2)
-                    {
+                        // При клике открываем детали (без двойного клика)
                         ApplicationDetailsForm detailsForm = new ApplicationDetailsForm(currentApp, true);
                         detailsForm.ShowDialog();
                         
@@ -515,54 +515,159 @@ namespace AdmissionSystem.Forms
                         {
                             LoadApplicationsCards();
                         }
-                    }
-                });
-                
-                appsCardsPanel.Controls.Add(card);
+                    });
+                    
+                    appsCardsPanel.Controls.Add(card);
+                }
+            }
+            catch (Exception)
+            {
+                // Не показываем ошибку пользователю
+                Label lblError = new Label
+                {
+                    Text = "Не удалось загрузить заявления",
+                    Font = new Font("Segoe UI", 12),
+                    ForeColor = ModernUIHelper.TextSecondary,
+                    Size = new Size(1100, 100),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    BackColor = Color.Transparent
+                };
+                appsCardsPanel.Controls.Add(lblError);
             }
         }
 
         private void LoadSpecialties()
         {
-            List<Specialty> specialties = DatabaseHelper.GetAllSpecialties();
-            dgvSpecialties.DataSource = null;
-            dgvSpecialties.DataSource = specialties;
-
-            if (dgvSpecialties.Columns.Count > 0 && dgvSpecialties.Columns["Id"] != null)
+            try
             {
-                dgvSpecialties.Columns["Id"].HeaderText = "ID";
-                dgvSpecialties.Columns["Id"].Width = 60;
-                if (dgvSpecialties.Columns["Name"] != null)
-                    dgvSpecialties.Columns["Name"].HeaderText = "Название";
-                if (dgvSpecialties.Columns["Code"] != null)
-                    dgvSpecialties.Columns["Code"].HeaderText = "Код";
-                if (dgvSpecialties.Columns["PlacesCount"] != null)
-                    dgvSpecialties.Columns["PlacesCount"].HeaderText = "Мест";
-                if (dgvSpecialties.Columns["MinScore"] != null)
-                    dgvSpecialties.Columns["MinScore"].HeaderText = "Мин. балл";
-                if (dgvSpecialties.Columns["Description"] != null)
-                    dgvSpecialties.Columns["Description"].HeaderText = "Описание";
+                List<Specialty> specialties = DatabaseHelper.GetAllSpecialties();
+                
+                // Проверяем, что DataGridView инициализирован
+                if (dgvSpecialties == null) return;
+                
+                dgvSpecialties.DataSource = null;
+                dgvSpecialties.DataSource = specialties;
+
+                // Проверяем наличие столбцов перед доступом к ним
+                if (dgvSpecialties.Columns.Count > 0)
+                {
+                    // Используем проверку индексов для безопасного доступа
+                    if (dgvSpecialties.Columns.Contains("Id"))
+                    {
+                        var idColumn = dgvSpecialties.Columns["Id"];
+                        if (idColumn != null)
+                        {
+                            idColumn.HeaderText = "ID";
+                        }
+                    }
+                    
+                    if (dgvSpecialties.Columns.Contains("Name"))
+                    {
+                        var nameColumn = dgvSpecialties.Columns["Name"];
+                        if (nameColumn != null)
+                            nameColumn.HeaderText = "Название";
+                    }
+                        
+                    if (dgvSpecialties.Columns.Contains("Code"))
+                    {
+                        var codeColumn = dgvSpecialties.Columns["Code"];
+                        if (codeColumn != null)
+                            codeColumn.HeaderText = "Код";
+                    }
+                        
+                    if (dgvSpecialties.Columns.Contains("PlacesCount"))
+                    {
+                        var placesColumn = dgvSpecialties.Columns["PlacesCount"];
+                        if (placesColumn != null)
+                            placesColumn.HeaderText = "Мест";
+                    }
+                        
+                    if (dgvSpecialties.Columns.Contains("MinScore"))
+                    {
+                        var scoreColumn = dgvSpecialties.Columns["MinScore"];
+                        if (scoreColumn != null)
+                            scoreColumn.HeaderText = "Мин. балл";
+                    }
+                        
+                    if (dgvSpecialties.Columns.Contains("Description"))
+                    {
+                        var descColumn = dgvSpecialties.Columns["Description"];
+                        if (descColumn != null)
+                            descColumn.HeaderText = "Описание";
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Не показываем ошибку пользователю
+                if (dgvSpecialties != null)
+                {
+                    dgvSpecialties.DataSource = null;
+                }
             }
         }
 
         private void LoadUsers()
         {
-            List<User> users = DatabaseHelper.GetAllUsers();
-            dgvUsers.DataSource = null;
-            dgvUsers.DataSource = users;
-
-            if (dgvUsers.Columns.Count > 0 && dgvUsers.Columns["Id"] != null)
+            try
             {
-                dgvUsers.Columns["Id"].HeaderText = "ID";
-                dgvUsers.Columns["Id"].Width = 60;
-                if (dgvUsers.Columns["Login"] != null)
-                    dgvUsers.Columns["Login"].HeaderText = "Логин";
-                if (dgvUsers.Columns["Password"] != null)
-                    dgvUsers.Columns["Password"].Visible = false;
-                if (dgvUsers.Columns["FullName"] != null)
-                    dgvUsers.Columns["FullName"].HeaderText = "ФИО";
-                if (dgvUsers.Columns["Role"] != null)
-                    dgvUsers.Columns["Role"].HeaderText = "Роль";
+                List<User> users = DatabaseHelper.GetAllUsers();
+                
+                // Проверяем, что DataGridView инициализирован
+                if (dgvUsers == null) return;
+                
+                dgvUsers.DataSource = null;
+                dgvUsers.DataSource = users;
+
+                // Проверяем наличие столбцов перед доступом к ним
+                if (dgvUsers.Columns.Count > 0)
+                {
+                    // Используем проверку индексов для безопасного доступа
+                    if (dgvUsers.Columns.Contains("Id"))
+                    {
+                        var idColumn = dgvUsers.Columns["Id"];
+                        if (idColumn != null)
+                        {
+                            idColumn.HeaderText = "ID";
+                        }
+                    }
+                    
+                    if (dgvUsers.Columns.Contains("Login"))
+                    {
+                        var loginColumn = dgvUsers.Columns["Login"];
+                        if (loginColumn != null)
+                            loginColumn.HeaderText = "Логин";
+                    }
+                        
+                    if (dgvUsers.Columns.Contains("Password"))
+                    {
+                        var passColumn = dgvUsers.Columns["Password"];
+                        if (passColumn != null)
+                            passColumn.Visible = false;
+                    }
+                        
+                    if (dgvUsers.Columns.Contains("FullName"))
+                    {
+                        var nameColumn = dgvUsers.Columns["FullName"];
+                        if (nameColumn != null)
+                            nameColumn.HeaderText = "ФИО";
+                    }
+                        
+                    if (dgvUsers.Columns.Contains("Role"))
+                    {
+                        var roleColumn = dgvUsers.Columns["Role"];
+                        if (roleColumn != null)
+                            roleColumn.HeaderText = "Роль";
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Не показываем ошибку пользователю
+                if (dgvUsers != null)
+                {
+                    dgvUsers.DataSource = null;
+                }
             }
         }
 
@@ -580,10 +685,18 @@ namespace AdmissionSystem.Forms
             if (MessageBox.Show($"Изменить статус заявления на '{status}'?", "Подтверждение",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                DatabaseHelper.UpdateApplicationStatus(application.Id, status);
-                LoadApplicationsCards();
-                MessageBox.Show("Статус успешно изменен!", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                try
+                {
+                    DatabaseHelper.UpdateApplicationStatus(application.Id, status);
+                    LoadApplicationsCards();
+                    MessageBox.Show("Статус успешно изменен!", "Успех",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Не удалось изменить статус заявления", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
@@ -601,19 +714,35 @@ namespace AdmissionSystem.Forms
             if (MessageBox.Show("Удалить выбранное заявление?", "Подтверждение",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                DatabaseHelper.DeleteApplication(application.Id);
-                LoadApplicationsCards();
-                MessageBox.Show("Заявление успешно удалено!", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                try
+                {
+                    DatabaseHelper.DeleteApplication(application.Id);
+                    LoadApplicationsCards();
+                    MessageBox.Show("Заявление успешно удалено!", "Успех",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Не удалось удалить заявление", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
         private void AddSpecialty()
         {
-            SpecialtyEditForm form = new SpecialtyEditForm();
-            if (form.ShowDialog() == DialogResult.OK)
+            try
             {
-                LoadSpecialties();
+                SpecialtyEditForm form = new SpecialtyEditForm();
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    LoadSpecialties();
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Не удалось открыть форму добавления специальности", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -626,11 +755,19 @@ namespace AdmissionSystem.Forms
                 return;
             }
 
-            var specialty = (Specialty)dgvSpecialties.SelectedRows[0].DataBoundItem;
-            SpecialtyEditForm form = new SpecialtyEditForm(specialty);
-            if (form.ShowDialog() == DialogResult.OK)
+            try
             {
-                LoadSpecialties();
+                var specialty = (Specialty)dgvSpecialties.SelectedRows[0].DataBoundItem;
+                SpecialtyEditForm form = new SpecialtyEditForm(specialty);
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    LoadSpecialties();
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Не удалось открыть форму редактирования специальности", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -643,15 +780,23 @@ namespace AdmissionSystem.Forms
                 return;
             }
 
-            var specialty = (Specialty)dgvSpecialties.SelectedRows[0].DataBoundItem;
-
-            if (MessageBox.Show($"Удалить специальность '{specialty.Name}'?", "Подтверждение",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            try
             {
-                DatabaseHelper.DeleteSpecialty(specialty.Id);
-                LoadSpecialties();
-                MessageBox.Show("Специальность успешно удалена!", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                var specialty = (Specialty)dgvSpecialties.SelectedRows[0].DataBoundItem;
+
+                if (MessageBox.Show($"Удалить специальность '{specialty.Name}'?", "Подтверждение",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    DatabaseHelper.DeleteSpecialty(specialty.Id);
+                    LoadSpecialties();
+                    MessageBox.Show("Специальность успешно удалена!", "Успех",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Не удалось удалить специальность", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -664,22 +809,30 @@ namespace AdmissionSystem.Forms
                 return;
             }
 
-            var user = (User)dgvUsers.SelectedRows[0].DataBoundItem;
-
-            if (user.Role == "Admin")
+            try
             {
-                MessageBox.Show("Невозможно удалить администратора!", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                var user = (User)dgvUsers.SelectedRows[0].DataBoundItem;
+
+                if (user.Role == "Admin")
+                {
+                    MessageBox.Show("Невозможно удалить администратора!", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                if (MessageBox.Show($"Удалить пользователя '{user.FullName}'?", "Подтверждение",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    DatabaseHelper.DeleteUser(user.Id);
+                    LoadUsers();
+                    MessageBox.Show("Пользователь успешно удален!", "Успех",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
-
-            if (MessageBox.Show($"Удалить пользователя '{user.FullName}'?", "Подтверждение",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            catch (Exception)
             {
-                DatabaseHelper.DeleteUser(user.Id);
-                LoadUsers();
-                MessageBox.Show("Пользователь успешно удален!", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Не удалось удалить пользователя", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
