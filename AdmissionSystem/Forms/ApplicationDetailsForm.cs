@@ -105,7 +105,7 @@ namespace AdmissionSystem.Forms
                 UI.ModernUIHelper.SecondaryAccent,
                 ColorTranslator.FromHtml("#00b5ad")
             );
-            btnClose.Click += (s, e) => this.Close();
+            btnClose.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
 
             // Кнопки действий для админа
             if (isAdminMode && application.Status == "На рассмотрении")
@@ -130,6 +130,10 @@ namespace AdmissionSystem.Forms
 
                 buttonPanel.Controls.Add(btnApprove);
                 buttonPanel.Controls.Add(btnReject);
+            }
+            else
+            {
+                btnClose.Location = new Point(200, 20);
             }
 
             buttonPanel.Controls.Add(btnClose);
@@ -174,9 +178,18 @@ namespace AdmissionSystem.Forms
             if (MessageBox.Show("Одобрить это заявление?", "Подтверждение",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                application.Status = "Одобрено";
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                try
+                {
+                    DatabaseHelper.UpdateApplicationStatus(application.Id, "Одобрено");
+                    application.Status = "Одобрено";
+                    this.DialogResult = DialogResult.OK;
+                    this.Close();
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Не удалось одобрить заявление", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
@@ -185,9 +198,18 @@ namespace AdmissionSystem.Forms
             if (MessageBox.Show("Отклонить это заявление?", "Подтверждение",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                application.Status = "Отклонено";
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                try
+                {
+                    DatabaseHelper.UpdateApplicationStatus(application.Id, "Отклонено");
+                    application.Status = "Отклонено";
+                    this.DialogResult = DialogResult.OK;
+                    this.Close();
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Не удалось отклонить заявление", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
     }
