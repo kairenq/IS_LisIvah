@@ -309,38 +309,79 @@ namespace AdmissionSystem.Forms
         {
             try
             {
-                if (dgvSpecialties != null)
-                    LoadSpecialties();
-                else
-                    MessageBox.Show("ERROR: dgvSpecialties is null!", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                LoadSpecialties();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show($"Ошибка при загрузке данных:\n\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // Не показываем ошибку пользователю
             }
         }
 
         private void LoadSpecialties()
         {
-            List<Specialty> specialties = DatabaseHelper.GetAllSpecialties();
-            dgvSpecialties.DataSource = null;
-            dgvSpecialties.DataSource = specialties;
-
-            if (dgvSpecialties.Columns.Count > 0 && dgvSpecialties.Columns["Id"] != null)
+            try
             {
-                dgvSpecialties.Columns["Id"].HeaderText = "ID";
-                dgvSpecialties.Columns["Id"].Width = 60;
-                if (dgvSpecialties.Columns["Name"] != null)
-                    dgvSpecialties.Columns["Name"].HeaderText = "Название";
-                if (dgvSpecialties.Columns["Code"] != null)
-                    dgvSpecialties.Columns["Code"].HeaderText = "Код";
-                if (dgvSpecialties.Columns["PlacesCount"] != null)
-                    dgvSpecialties.Columns["PlacesCount"].HeaderText = "Мест";
-                if (dgvSpecialties.Columns["MinScore"] != null)
-                    dgvSpecialties.Columns["MinScore"].HeaderText = "Мин. балл";
-                if (dgvSpecialties.Columns["Description"] != null)
-                    dgvSpecialties.Columns["Description"].HeaderText = "Описание";
+                List<Specialty> specialties = DatabaseHelper.GetAllSpecialties();
+                
+                if (dgvSpecialties == null) return;
+                
+                dgvSpecialties.DataSource = null;
+                dgvSpecialties.DataSource = specialties;
+
+                if (dgvSpecialties.Columns.Count > 0)
+                {
+                    if (dgvSpecialties.Columns.Contains("Id"))
+                    {
+                        var idColumn = dgvSpecialties.Columns["Id"];
+                        if (idColumn != null)
+                        {
+                            idColumn.HeaderText = "ID";
+                        }
+                    }
+                    
+                    if (dgvSpecialties.Columns.Contains("Name"))
+                    {
+                        var nameColumn = dgvSpecialties.Columns["Name"];
+                        if (nameColumn != null)
+                            nameColumn.HeaderText = "Название";
+                    }
+                        
+                    if (dgvSpecialties.Columns.Contains("Code"))
+                    {
+                        var codeColumn = dgvSpecialties.Columns["Code"];
+                        if (codeColumn != null)
+                            codeColumn.HeaderText = "Код";
+                    }
+                        
+                    if (dgvSpecialties.Columns.Contains("PlacesCount"))
+                    {
+                        var placesColumn = dgvSpecialties.Columns["PlacesCount"];
+                        if (placesColumn != null)
+                            placesColumn.HeaderText = "Мест";
+                    }
+                        
+                    if (dgvSpecialties.Columns.Contains("MinScore"))
+                    {
+                        var scoreColumn = dgvSpecialties.Columns["MinScore"];
+                        if (scoreColumn != null)
+                            scoreColumn.HeaderText = "Мин. балл";
+                    }
+                        
+                    if (dgvSpecialties.Columns.Contains("Description"))
+                    {
+                        var descColumn = dgvSpecialties.Columns["Description"];
+                        if (descColumn != null)
+                            descColumn.HeaderText = "Описание";
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Не показываем ошибку пользователю
+                if (dgvSpecialties != null)
+                {
+                    dgvSpecialties.DataSource = null;
+                }
             }
         }
 
@@ -349,42 +390,59 @@ namespace AdmissionSystem.Forms
             // Очищаем старые карточки
             cardsFlowPanel.Controls.Clear();
 
-            // Получаем заявления пользователя
-            List<Models.Application> applications = DatabaseHelper.GetUserApplications(currentUser.Id);
-
-            if (applications.Count == 0)
+            try
             {
-                // Сообщение если нет заявлений
-                Label lblNoApps = new Label
+                // Получаем заявления пользователя
+                List<Models.Application> applications = DatabaseHelper.GetUserApplications(currentUser.Id);
+
+                if (applications.Count == 0)
                 {
-                    Text = "У вас пока нет заявлений.\nПерейдите в раздел 'Специальности' чтобы подать заявление.",
+                    // Сообщение если нет заявлений
+                    Label lblNoApps = new Label
+                    {
+                        Text = "У вас пока нет заявлений.\nПерейдите в раздел 'Специальности' чтобы подать заявление.",
+                        Font = new Font("Segoe UI", 12),
+                        ForeColor = ModernUIHelper.TextSecondary,
+                        Size = new Size(1100, 100),
+                        TextAlign = ContentAlignment.MiddleCenter,
+                        BackColor = Color.Transparent
+                    };
+                    cardsFlowPanel.Controls.Add(lblNoApps);
+                    return;
+                }
+
+                // Создаем карточки для каждого заявления
+                foreach (var app in applications)
+                {
+                    var card = ModernUIHelper.CreateApplicationCard(app, (s, e) =>
+                    {
+                        // При клике на карточку открываем детали
+                        ApplicationDetailsForm detailsForm = new ApplicationDetailsForm(app, false);
+                        detailsForm.ShowDialog();
+                        
+                        // Обновляем карточки после закрытия формы (если статус изменился)
+                        if (detailsForm.DialogResult == DialogResult.OK)
+                        {
+                            LoadApplicationsCards();
+                        }
+                    });
+                    
+                    cardsFlowPanel.Controls.Add(card);
+                }
+            }
+            catch (Exception)
+            {
+                // Не показываем ошибку пользователю
+                Label lblError = new Label
+                {
+                    Text = "Не удалось загрузить заявления",
                     Font = new Font("Segoe UI", 12),
                     ForeColor = ModernUIHelper.TextSecondary,
                     Size = new Size(1100, 100),
                     TextAlign = ContentAlignment.MiddleCenter,
                     BackColor = Color.Transparent
                 };
-                cardsFlowPanel.Controls.Add(lblNoApps);
-                return;
-            }
-
-            // Создаем карточки для каждого заявления
-            foreach (var app in applications)
-            {
-                var card = ModernUIHelper.CreateApplicationCard(app, (s, e) =>
-                {
-                    // При клике на карточку открываем детали
-                    ApplicationDetailsForm detailsForm = new ApplicationDetailsForm(app, false);
-                    detailsForm.ShowDialog();
-                    
-                    // Обновляем карточки после закрытия формы (если статус изменился)
-                    if (detailsForm.DialogResult == DialogResult.OK)
-                    {
-                        LoadApplicationsCards();
-                    }
-                });
-                
-                cardsFlowPanel.Controls.Add(card);
+                cardsFlowPanel.Controls.Add(lblError);
             }
         }
 
@@ -397,12 +455,20 @@ namespace AdmissionSystem.Forms
                 return;
             }
 
-            var specialty = (Specialty)dgvSpecialties.SelectedRows[0].DataBoundItem;
-            ApplicationForm form = new ApplicationForm(currentUser, specialty);
-            if (form.ShowDialog() == DialogResult.OK)
+            try
             {
-                LoadApplicationsCards();
-                ShowApplicationsPanel();
+                var specialty = (Specialty)dgvSpecialties.SelectedRows[0].DataBoundItem;
+                ApplicationForm form = new ApplicationForm(currentUser, specialty);
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    LoadApplicationsCards();
+                    ShowApplicationsPanel();
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Не удалось открыть форму подачи заявления", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -431,10 +497,18 @@ namespace AdmissionSystem.Forms
             if (MessageBox.Show("Удалить выбранное заявление?", "Подтверждение",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                DatabaseHelper.DeleteApplication(application.Id);
-                LoadApplicationsCards();
-                MessageBox.Show("Заявление успешно удалено!", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                try
+                {
+                    DatabaseHelper.DeleteApplication(application.Id);
+                    LoadApplicationsCards();
+                    MessageBox.Show("Заявление успешно удалено!", "Успех",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Не удалось удалить заявление", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
     }
