@@ -23,6 +23,18 @@ namespace AdmissionSystem.Forms
 
         public LoginForm()
         {
+            // Инициализируем базу данных в конструкторе
+            try
+            {
+                DatabaseHelper.InitializeDatabase();
+            }
+            catch (Exception ex)
+            {
+                // Логируем ошибку, но не показываем пользователю
+                Console.WriteLine($"Ошибка инициализации базы данных: {ex.Message}");
+                // Можно создать файл базы данных в памяти или использовать другой метод
+            }
+            
             InitializeComponent();
         }
 
@@ -264,36 +276,52 @@ namespace AdmissionSystem.Forms
                 return;
             }
 
-            User user = DatabaseHelper.GetUser(login, password);
-
-            if (user != null)
+            try
             {
-                this.Hide();
+                User user = DatabaseHelper.GetUser(login, password);
 
-                if (user.Role == "Admin")
+                if (user != null)
                 {
-                    AdminPanel adminPanel = new AdminPanel(user);
-                    adminPanel.FormClosed += (s, args) => this.Close();
-                    adminPanel.Show();
+                    this.Hide();
+
+                    if (user.Role == "Admin")
+                    {
+                        AdminPanel adminPanel = new AdminPanel(user);
+                        adminPanel.FormClosed += (s, args) => this.Close();
+                        adminPanel.Show();
+                    }
+                    else
+                    {
+                        UserPanel userPanel = new UserPanel(user);
+                        userPanel.FormClosed += (s, args) => this.Close();
+                        userPanel.Show();
+                    }
                 }
                 else
                 {
-                    UserPanel userPanel = new UserPanel(user);
-                    userPanel.FormClosed += (s, args) => this.Close();
-                    userPanel.Show();
+                    MessageBox.Show("Неверный логин или пароль!", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-            else
+            catch (Exception)
             {
-                MessageBox.Show("Неверный логин или пароль!", "Ошибка",
+                MessageBox.Show("Ошибка подключения к базе данных. Пожалуйста, попробуйте позже.", "Ошибка",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void BtnRegister_Click(object sender, EventArgs e)
         {
-            RegisterForm registerForm = new RegisterForm();
-            registerForm.ShowDialog();
+            try
+            {
+                RegisterForm registerForm = new RegisterForm();
+                registerForm.ShowDialog();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Не удалось открыть форму регистрации", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void LinkInstruction_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
